@@ -125,17 +125,23 @@ class HX711:
     def set_one_kilo(self, one_kilo):
         self.ONE_KILO = one_kilo
 
+    # HX711 datasheet states that setting the PDA_CLOCK pin on high for a more than 60 microseconds would power off the chip.
+    # I'd recommend it to prevent noise from messing up with it. I used 100 microseconds, just in case.
     def power_down(self):
         GPIO.output(self.PD_SCK, False)
         GPIO.output(self.PD_SCK, True)
+        time.sleep(0.0001)
 
     def power_up(self):
         GPIO.output(self.PD_SCK, False)
+        time.sleep(0.0001)
 
 ############# EXAMPLE
 hx = HX711(5, 6)
 hx.set_scale(1000)
 hx.set_one_kilo(92)
+hx.power_down()
+hx.power_up()
 hx.tare()
 
 while True:
@@ -143,10 +149,7 @@ while True:
         val = hx.get_weight(5)
         print val
 
-        # HX711 datasheet states that setting the PDA_CLOCK pin on high for a more than 60 microseconds would power off the chip.
-        # I'd recommend it to prevent noise from messing up with it. I used 100 microseconds, just in case.
         hx.power_down()
-        time.sleep(0.0001)
         hx.power_up()
         time.sleep(0.5)
     except (KeyboardInterrupt, SystemExit):
