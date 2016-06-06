@@ -30,7 +30,7 @@ class HX711:
         self.GAIN = 0
         self.OFFSET = 0
         self.SCALE = 1
-        self.ONE_KILO = 1
+        self.ONE_KILO = 1  # The value returned by the hx711 that corresponds to 1kg AFTER dividing by the SCALE.
         self.lastVal = 0
 
         #GPIO.output(self.PD_SCK, True)
