@@ -30,7 +30,7 @@ class HX711:
         self.GAIN = 0
         self.OFFSET = 0
         self.SCALE = 1
-        self.ONE_KILO = 1  # The value returned by the hx711 that corresponds to 1kg AFTER dividing by the SCALE.
+        self.REFERENCE_UNIT = 1  # The value returned by the hx711 that corresponds to your reference unit AFTER dividing by the SCALE.
         self.lastVal = 0
 
         #GPIO.output(self.PD_SCK, True)
@@ -99,22 +99,22 @@ class HX711:
         return self.get_value(times) / self.SCALE
 
     def get_weight(self, times=3):
-        return ("%.3f" % float(float(self.get_units(times)) / float(self.ONE_KILO)))
+        return ("%.3f" % float(float(self.get_units(times)) / float(self.REFERENCE_UNIT)))
 
     def tare(self, times=15):
         # Backup SCALE value
         scale = self.SCALE
         self.set_scale(1)
 
-        # Backup ONE_KILO VALUE
-        one_kilo = self.ONE_KILO
-        self.set_one_kilo(1)
+        # Backup REFERENCE_UNIT VALUE
+        reference_unit = self.REFERENCE_UNIT
+        self.set_reference_unit(1)
 
         value = self.read_average(times)
         self.set_offset(value)
 
         self.set_scale(scale)
-        self.set_one_kilo(one_kilo)
+        self.set_reference_unit(reference_unit)
 
     def set_scale(self, scale):
         self.SCALE = scale
@@ -122,8 +122,8 @@ class HX711:
     def set_offset(self, offset):
         self.OFFSET = offset
 
-    def set_one_kilo(self, one_kilo):
-        self.ONE_KILO = one_kilo
+    def set_reference_unit(self, reference_unit):
+        self.REFERENCE_UNIT = reference_unit
 
     # HX711 datasheet states that setting the PDA_CLOCK pin on high for a more than 60 microseconds would power off the chip.
     # I'd recommend it to prevent noise from messing up with it. I used 100 microseconds, just in case.
@@ -139,7 +139,7 @@ class HX711:
 ############# EXAMPLE
 hx = HX711(5, 6)
 hx.set_scale(1000)
-hx.set_one_kilo(92)
+hx.set_reference_unit(92)
 hx.power_down()
 hx.power_up()
 hx.tare()
