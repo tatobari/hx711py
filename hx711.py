@@ -96,7 +96,7 @@ class HX711:
         return self.read_average(times) - self.OFFSET
 
     def get_units(self, times=3):
-        return self.get_value(times) / self.SCALE
+        return float(self.get_value(times)) / float(self.SCALE)
 
     def get_weight(self, times=3):
         return ("%.3f" % float(float(self.get_units(times)) / float(self.REFERENCE_UNIT)))
