@@ -31,7 +31,7 @@ class HX711:
         self.OFFSET = 0
         self.SCALE = 1
         self.REFERENCE_UNIT = 1  # The value returned by the hx711 that corresponds to your reference unit AFTER dividing by the SCALE.
-        self.lastVal = 0
+        self.lastVal = long(0)
 
         #GPIO.output(self.PD_SCK, True)
         #GPIO.output(self.PD_SCK, False)
@@ -76,17 +76,17 @@ class HX711:
 
         #check for all 1
         #if all(item is True for item in dataBits[0]):
-        #    return int(self.lastVal)
+        #    return long(self.lastVal)
 
         dataBytes[2] ^= 0x80
         np_arr8 = numpy.uint8(dataBytes)
         np_arr32 = np_arr8.view('uint32')
         self.lastVal = np_arr32
 
-        return int(self.lastVal)
+        return long(self.lastVal)
 
     def read_average(self, times=3):
-        values = 0
+        values = long(0)
         for i in range(times):
             values += self.read()
 
