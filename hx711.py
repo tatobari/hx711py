@@ -98,8 +98,9 @@ class HX711:
     def get_units(self, times=3):
         return float(self.get_value(times)) / float(self.SCALE)
 
-    def get_weight(self, times=3):
-        return ("%.3f" % float(float(self.get_units(times)) / float(self.REFERENCE_UNIT)))
+    def get_weight(self, times=3, decimals=3):
+        decimals_string = "%." + decimals + "f"
+        return (decimals_string % float(float(self.get_units(times)) / float(self.REFERENCE_UNIT)))
 
     def tare(self, times=15):
         # Backup SCALE value
