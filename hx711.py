@@ -1,6 +1,5 @@
 import RPi.GPIO as GPIO
 import time
-import sys
 import numpy  # sudo apt-get python-numpy
 
 class HX711:
@@ -47,7 +46,7 @@ class HX711:
     
     def createBoolList(self, size=8):
         ret = []
-        for i in range(8):
+        for i in range(size):
             ret.append(False)
         return ret
 
@@ -157,7 +156,7 @@ class HX711:
     def set_reference_unit(self, reference_unit):
         self.REFERENCE_UNIT = reference_unit
 
-    # HX711 datasheet states that setting the PDA_CLOCK pin on high for a more than 60 microseconds would power off the chip.
+    # HX711 datasheet states that setting the PDA_CLOCK pin on high for >60 microseconds would power off the chip.
     # I used 100 microseconds, just in case.
     # I've found it is good practice to reset the hx711 if it wasn't used for more than a few seconds.
     def power_down(self):
