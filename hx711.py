@@ -17,11 +17,11 @@ class HX711:
         # unit AFTER dividing by the SCALE.
         self.REFERENCE_UNIT_A = 1
         self.REFERENCE_UNIT_B = 1
-        self.REFERENCE_UNIT = self.REFERENCE_UNIT_A
+        self.REFERENCE_UNIT = 1
 
         self.OFFSET_A = 1
         self.OFFSET_B = 1
-        self.OFFSET = self.OFFSET_A
+        self.OFFSET = 1
         self.lastVal = long(0)
 
         self.LSByte = [2, -1, -1]
@@ -141,14 +141,14 @@ class HX711:
         return self.get_value_A(times)
 
     def get_value_A(self, times=3):
-        return self.read_average(times) - self.OFFSET_A
+        return self.read_median(times) - self.OFFSET_A
 
     def get_value_B(self, times=3):
         # for channel B, we need to set_gain(32)
-        gain = self.GAIN
+        g = self.GAIN
         self.set_gain(32)
-        value = self.read_average(times) - self.OFFSET_B
-        self.set_gain(gain)
+        value = self.read_median(times) - self.OFFSET_B
+        self.GAIN = g
         return value
 
     # Compatibility function, uses channel A version
@@ -185,13 +185,13 @@ class HX711:
         self.set_reference_unit_B(1)
 
         # for channel B, we need to set_gain(32)
-        gain = self.GAIN
+        g = self.GAIN
         self.set_gain(32)
 
         value = self.read_median(times)
         self.set_offset_B(value)
 
-        self.set_gain(gain)
+        self.GAIN = g
         self.set_reference_unit_B(reference_unit)
 
     def set_reading_format(self, byte_format="LSB", bit_format="MSB"):
