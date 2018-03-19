@@ -138,7 +138,7 @@ class HX711:
 
     # Compatibility function, uses channel A version
     def get_value(self, times=3):
-        return self.get_value_A(self, times)
+        return self.get_value_A(times)
 
     def get_value_A(self, times=3):
         return self.read_average(times) - self.OFFSET_A
@@ -153,7 +153,7 @@ class HX711:
 
     # Compatibility function, uses channel A version
     def get_weight(self, times=3):
-        return self.get_weight_A(self, times)
+        return self.get_weight_A(times)
 
     def get_weight_A(self, times=3):
         value = self.get_value_A(times)
@@ -167,7 +167,7 @@ class HX711:
 
     # Sets tare for channel A for compatibility purposes
     def tare(self, times=15):
-        self.tare_A(self, times)
+        self.tare_A(times)
 
     def tare_A(self, times=15):
         # Backup REFERENCE_UNIT value
@@ -207,7 +207,7 @@ class HX711:
 
     # sets offset for channel A for compatibility reasons
     def set_offset(self, offset):
-        self.set_offset_A(self, offset)
+        self.set_offset_A(offset)
 
     def set_offset_A(self, offset):
         self.OFFSET_A = offset
@@ -218,7 +218,7 @@ class HX711:
 
     # sets reference unit for channel A for compatibility reasons
     def set_reference_unit(self, reference_unit):
-        self.set_reference_unit_A(self, reference_unit)
+        self.set_reference_unit_A(reference_unit)
 
     def set_reference_unit_A(self, reference_unit):
         self.REFERENCE_UNIT_A = reference_unit
