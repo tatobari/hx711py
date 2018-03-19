@@ -12,14 +12,21 @@ class HX711:
         GPIO.setup(self.DOUT, GPIO.IN)
 
         self.GAIN = 0
-        self.REFERENCE_UNIT = 1  # The value returned by the hx711 that corresponds to your reference unit AFTER dividing by the SCALE.
-        
-        self.OFFSET = 1
+
+        # The value returned by the hx711 that corresponds to your reference
+        # unit AFTER dividing by the SCALE.
+        self.REFERENCE_UNIT_A = 1
+        self.REFERENCE_UNIT_B = 1
+        self.REFERENCE_UNIT = self.REFERENCE_UNIT_A
+
+        self.OFFSET_A = 1
+        self.OFFSET_B = 1
+        self.OFFSET = self.OFFSET_A
         self.lastVal = long(0)
 
         self.LSByte = [2, -1, -1]
         self.MSByte = [0, 3, 1]
-        
+
         self.MSBit = [0, 8, 1]
         self.LSBit = [7, -1, -1]
 
@@ -43,7 +50,7 @@ class HX711:
 
         GPIO.output(self.PD_SCK, False)
         self.read()
-    
+
     def createBoolList(self, size=8):
         ret = []
         for i in range(size):
@@ -97,7 +104,7 @@ class HX711:
                 comma = ""
             np_arr8_string += str(np_arr8[i]) + comma
         np_arr8_string += "]";
-        
+
         return np_arr8_string
 
     def read_np_arr8(self):
@@ -120,24 +127,72 @@ class HX711:
 
         return values / times
 
-    def get_value(self, times=3):
-        return self.read_average(times) - self.OFFSET
+    # A median-based read method, might help when getting random value spikes
+    # for unknown or CPU-related reasons
+    def read_median(self, times=3):
+        values = list()
+        for i in range(times):
+            values.append(self.read_long())
 
-    def get_weight(self, times=3):
-        value = self.get_value(times)
-        value = value / self.REFERENCE_UNIT
+        return numpy.median(values)
+
+    # Compatibility function, uses channel A version
+    def get_value(self, times=3):
+        return self.get_value_A(self, times)
+
+    def get_value_A(self, times=3):
+        return self.read_average(times) - self.OFFSET_A
+
+    def get_value_B(self, times=3):
+        # for channel B, we need to set_gain(32)
+        gain = self.GAIN
+        self.set_gain(32)
+        value = self.read_average(times) - self.OFFSET_B
+        self.set_gain(gain)
         return value
 
+    # Compatibility function, uses channel A version
+    def get_weight(self, times=3):
+        return self.get_weight_A(self, times)
+
+    def get_weight_A(self, times=3):
+        value = self.get_value_A(times)
+        value = value / self.REFERENCE_UNIT_A
+        return value
+
+    def get_weight_B(self, times=3):
+        value = self.get_value_B(times)
+        value = value / self.REFERENCE_UNIT_B
+        return value
+
+    # Sets tare for channel A for compatibility purposes
     def tare(self, times=15):
-       
+        self.tare_A(self, times)
+
+    def tare_A(self, times=15):
         # Backup REFERENCE_UNIT value
-        reference_unit = self.REFERENCE_UNIT
-        self.set_reference_unit(1)
+        reference_unit = self.REFERENCE_UNIT_A
+        self.set_reference_unit_A(1)
 
-        value = self.read_average(times)
-        self.set_offset(value)
+        value = self.read_median(times)
+        self.set_offset_A(value)
 
-        self.set_reference_unit(reference_unit)
+        self.set_reference_unit_A(reference_unit)
+
+    def tare_B(self, times=15):
+        # Backup REFERENCE_UNIT value
+        reference_unit = self.REFERENCE_UNIT_B
+        self.set_reference_unit_B(1)
+
+        # for channel B, we need to set_gain(32)
+        gain = self.GAIN
+        self.set_gain(32)
+
+        value = self.read_median(times)
+        self.set_offset_B(value)
+
+        self.set_gain(gain)
+        self.set_reference_unit_B(reference_unit)
 
     def set_reading_format(self, byte_format="LSB", bit_format="MSB"):
         if byte_format == "LSB":
@@ -150,11 +205,27 @@ class HX711:
         elif bit_format == "MSB":
             self.bit_range_values = self.MSBit
 
+    # sets offset for channel A for compatibility reasons
     def set_offset(self, offset):
+        self.set_offset_A(self, offset)
+
+    def set_offset_A(self, offset):
+        self.OFFSET_A = offset
         self.OFFSET = offset
 
+    def set_offset_B(self, offset):
+        self.OFFSET_B = offset
+
+    # sets reference unit for channel A for compatibility reasons
     def set_reference_unit(self, reference_unit):
+        self.set_reference_unit_A(self, reference_unit)
+
+    def set_reference_unit_A(self, reference_unit):
+        self.REFERENCE_UNIT_A = reference_unit
         self.REFERENCE_UNIT = reference_unit
+
+    def set_reference_unit_B(self, reference_unit):
+        self.REFERENCE_UNIT_B = reference_unit
 
     # HX711 datasheet states that setting the PDA_CLOCK pin on high for >60 microseconds would power off the chip.
     # I used 100 microseconds, just in case.
