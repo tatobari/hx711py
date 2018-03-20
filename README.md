@@ -11,8 +11,9 @@ versions are updated, also for compatibility.
 I also added a read_median() function that works like the current read_average()
 function, but returns the median of the samples instead of the average.  The
 hope is that this method will help smooth out some spikes in the data that I
-think are CPU load related (I'm using this on a Pi Zero W).  The tare()
-functions have been converted to use this method instead of read_average().
+think are CPU load related (I'm using this on a Pi Zero W).  The tare() and
+get_value() functions have been converted to use this method instead of 
+read_average().
 
 Using a 2-channel HX711 module
 ------------------------------
@@ -29,6 +30,7 @@ TODO:
 -----
   * Incorporate a method for calculating reference value based off of a known
     mass.
+  * Update example.py to handle both channels.
 
 Original README
 ---------------
