@@ -15,6 +15,14 @@ think are CPU load related (I'm using this on a Pi Zero W).  The tare() and
 get_value() functions have been converted to use this method instead of 
 read_average().
 
+Installation
+------------
+1. Clone or download and unpack this repository
+2. In the repository directory, run
+```
+python setup.py install
+```
+
 Using a 2-channel HX711 module
 ------------------------------
 Channel A has selectable gain of 128 or 64.  Using set_gain(128) or set_gain(64)
