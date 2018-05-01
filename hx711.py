@@ -24,6 +24,9 @@ class HX711:
         self.MSBit = [0, 8, 1]
         self.LSBit = [7, -1, -1]
 
+        self.byte_format = 'LSB'
+        self.bit_format = 'MSB'
+
         self.byte_range_values = self.LSByte
         self.bit_range_values = self.MSBit
 
@@ -141,6 +144,10 @@ class HX711:
         self.set_reference_unit(reference_unit)
 
     def set_reading_format(self, byte_format="LSB", bit_format="MSB"):
+
+        self.byte_format = byte_format
+        self.bit_format = bit_format
+
         if byte_format == "LSB":
             self.byte_range_values = self.LSByte
         elif byte_format == "MSB":
