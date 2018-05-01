@@ -142,6 +142,7 @@ class HX711:
         self.set_offset(value)
 
         self.set_reference_unit(reference_unit)
+        return value;
 
     def set_reading_format(self, byte_format="LSB", bit_format="MSB"):
 
