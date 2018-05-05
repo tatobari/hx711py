@@ -50,6 +50,7 @@ class HX711:
 
         GPIO.output(self.PD_SCK, False)
         self.read()
+        time.sleep(0.4)
 
     def createBoolList(self, size=8):
         ret = []
@@ -237,7 +238,7 @@ class HX711:
 
     def power_up(self):
         GPIO.output(self.PD_SCK, False)
-        time.sleep(0.0001)
+        time.sleep(0.4)
 
     def reset(self):
         self.power_down()
