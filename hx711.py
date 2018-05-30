@@ -17,13 +17,11 @@ class HX711:
 
         # The value returned by the hx711 that corresponds to your reference
         # unit AFTER dividing by the SCALE.
-        self.REFERENCE_UNIT_A = 1
-        self.REFERENCE_UNIT_B = 1
         self.REFERENCE_UNIT = 1
+        self.REFERENCE_UNIT_B = 1
 
-        self.OFFSET_A = 1
-        self.OFFSET_B = 1
         self.OFFSET = 1
+        self.OFFSET_B = 1
         self.lastVal = long(0)
 
         self.LSByte = [2, -1, -1]
@@ -166,7 +164,7 @@ class HX711:
 
 
     def get_value_A(self, times=3):
-        return self.read_median(times) - self.OFFSET_A
+        return self.read_median(times) - self.OFFSET
 
 
     def get_value_B(self, times=3):
@@ -185,7 +183,7 @@ class HX711:
 
     def get_weight_A(self, times=3):
         value = self.get_value_A(times)
-        value = value / self.REFERENCE_UNIT_A
+        value = value / self.REFERENCE_UNIT
         return value
 
 
@@ -202,7 +200,7 @@ class HX711:
 
     def tare_A(self, times=15):
         # Backup REFERENCE_UNIT value
-        reference_unit = self.REFERENCE_UNIT_A
+        reference_unit = self.REFERENCE_UNIT
         self.set_reference_unit_A(1)
 
         value = self.read_median(times)
@@ -245,7 +243,6 @@ class HX711:
 
 
     def set_offset_A(self, offset):
-        self.OFFSET_A = offset
         self.OFFSET = offset
 
 
@@ -259,7 +256,6 @@ class HX711:
 
 
     def set_reference_unit_A(self, reference_unit):
-        self.REFERENCE_UNIT_A = reference_unit
         self.REFERENCE_UNIT = reference_unit
 
 
