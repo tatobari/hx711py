@@ -52,6 +52,16 @@ class HX711:
         self.read()
         time.sleep(0.4)
 
+
+    def get_gain(self):
+        if self.GAIN == 1:
+            return 128
+        elif self.GAIN == 3:
+            return 64
+        elif self.GAIN == 2:
+            return 32
+
+
     def createBoolList(self, size=8):
         ret = []
         for i in range(size):
@@ -146,10 +156,10 @@ class HX711:
 
     def get_value_B(self, times=3):
         # for channel B, we need to set_gain(32)
-        g = self.GAIN
+        g = self.get_gain()
         self.set_gain(32)
         value = self.read_median(times) - self.OFFSET_B
-        self.GAIN = g
+        self.set_gain(g)
         return value
 
     # Compatibility function, uses channel A version
@@ -186,13 +196,13 @@ class HX711:
         self.set_reference_unit_B(1)
 
         # for channel B, we need to set_gain(32)
-        g = self.GAIN
+        g = self.get_gain()
         self.set_gain(32)
 
         value = self.read_median(times)
         self.set_offset_B(value)
 
-        self.GAIN = g
+        self.set_gain(g)
         self.set_reference_unit_B(reference_unit)
 
     def set_reading_format(self, byte_format="LSB", bit_format="MSB"):
