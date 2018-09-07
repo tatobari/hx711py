@@ -287,10 +287,12 @@ class HX711:
         # serial interface.
         self.readLock.release()
 
-        # HX711 will now be defaulted to Channel A with gain of 128.  Consider
-        # automatically handling this.
+        # HX711 will now be defaulted to Channel A with gain of 128.  If this
+        # isn't what client software has requested from us, take a sample and
+        # throw it away, so that next sample from the HX711 will be from the
+        # correct channel/gain.
         if self.get_gain() != 128:
-            print "HX711().power_up(): Warning!  HX711 now set to Channel A with gain of 128."
+            self.readRawBytes()
 
 
     def reset(self):
