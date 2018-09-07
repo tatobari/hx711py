@@ -246,19 +246,52 @@ class HX711:
 
     
     def set_reference_unit(self, reference_unit):
+        # Make sure we aren't asked to use an invalid reference unit.
+        if reference_unit == 0:
+            print "HX711().set_reference_unit(): Can't use 0 as a reference unit!!"
+            return
+
         self.REFERENCE_UNIT = reference_unit
 
-    # HX711 datasheet states that setting the PDA_CLOCK pin on high for >60 microseconds would power off the chip.
-    # I used 100 microseconds, just in case.
-    # I've found it is good practice to reset the hx711 if it wasn't used for more than a few seconds.
+
     def power_down(self):
+        # Wait for and get the Read Lock, incase another thread is already
+        # driving the HX711 serial interface.
+        self.readLock.acquire()
+
+        # Cause a rising edge on HX711 Digital Serial Clock (PD_SCK).  We then
+        # leave it held up and wait 100 us.  After 60us the HX711 should be
+        # powered down.
         GPIO.output(self.PD_SCK, False)
         GPIO.output(self.PD_SCK, True)
+
         time.sleep(0.0001)
 
+        # Release the Read Lock, now that we've finished driving the HX711
+        # serial interface.
+        self.readLock.release()           
+
+
     def power_up(self):
+        # Wait for and get the Read Lock, incase another thread is already
+        # driving the HX711 serial interface.
+        self.readLock.acquire()
+
+        # Lower the HX711 Digital Serial Clock (PD_SCK) line.
         GPIO.output(self.PD_SCK, False)
+
+        # Wait 100 us for the HX711 to power back up.
         time.sleep(0.0001)
+
+        # Release the Read Lock, now that we've finished driving the HX711
+        # serial interface.
+        self.readLock.release()
+
+        # HX711 will now be defaulted to Channel A with gain of 128.  Consider
+        # automatically handling this.
+        if self.get_gain() != 128:
+            print "HX711().power_up(): Warning!  HX711 now set to Channel A with gain of 128."
+
 
     def reset(self):
         self.power_down()
