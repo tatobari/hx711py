@@ -2,6 +2,8 @@
 
 import RPi.GPIO as GPIO
 import time
+import threading
+
 
 class HX711:
     def __init__(self, dout, pd_sck, gain=128):
@@ -25,6 +27,10 @@ class HX711:
         self.bit_format = 'MSB'
 
         self.set_gain(gain)
+
+        # Mutex for reading from the HX711, in case multiple threads in client
+        # software try to access get values from the class at the same time.
+        self.readRock = threading.Lock()
 
         time.sleep(1)
 
@@ -96,6 +102,10 @@ class HX711:
         
 
     def readRawBytes(self):
+        # Wait for and get the Read Lock, incase another thread is already
+        # driving the HX711 serial interface.
+        self.readLock.acquire()
+
         # Wait until HX711 is ready for us to read a sample.
         while not self.is_ready():
            pass
@@ -110,7 +120,11 @@ class HX711:
         for i in range(self.GAIN):
            # Clock a bit out of the HX711 and throw it away.
            self.readNextBit()
-       
+
+        # Release the Read Lock, now that we've finished driving the HX711
+        # serial interface.
+        self.readLock.release()           
+
         # Depending on how we're configured, return and orderd list of raw byte values.
         if self.byte_format == 'LSB':
            return [thirdByte, secondByte, firstByte]
@@ -145,11 +159,36 @@ class HX711:
 
     
     def read_average(self, times=3):
-        values = long(0)
-        for i in range(times):
-            values += self.read_long()
+        # If we're only average across one value, just read it and return it.
+        if times == 1:
+            return self.read_long()
 
-        return values / times
+        # If we're averages across a low amount of values, just take an
+        # arithmetic mean.
+        if times < 5:
+            values = long(0)
+            for i in range(times):
+                values += self.read_long()
+
+            return values / times
+
+        # If we're taking a lot of samples, we'll collect them in a list, remove
+        # the outliers, then take the mean of the remaining set.
+        valueList = []
+
+        for x in range(times):
+            valueList += [self.read_long()]
+
+        valueList.sort()
+
+        # We'll be trimming 20% of outlier samples from top and bottom of collected set.
+        trimAmount = int(len(valueList) * 0.2)
+
+        # Trim the edge case values.
+        valueList = valueList[trimAmount:-trimAmount]
+
+        # Return the mean of remaining samples.
+        return sum(valueList) / len(valueList)
 
     
     def get_value(self, times=3):
@@ -162,8 +201,7 @@ class HX711:
         return value
 
     
-    def tare(self, times=15):
-       
+    def tare(self, times=15):      
         # Backup REFERENCE_UNIT value
         reference_unit = self.REFERENCE_UNIT
         self.set_reference_unit(1)
@@ -175,7 +213,9 @@ class HX711:
         
         self.set_offset(value)
 
+        # Restore the reference unit, now that we've got our offset.
         self.set_reference_unit(reference_unit)
+
         return value;
 
     
