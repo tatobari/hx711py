@@ -11,6 +11,10 @@ class HX711:
 
         self.DOUT = dout
 
+        # Mutex for reading from the HX711, in case multiple threads in client
+        # software try to access get values from the class at the same time.
+        self.readLock = threading.Lock()
+        
         GPIO.setmode(GPIO.BCM)
         GPIO.setup(self.PD_SCK, GPIO.OUT)
         GPIO.setup(self.DOUT, GPIO.IN)
@@ -28,10 +32,7 @@ class HX711:
 
         self.set_gain(gain)
 
-        # Mutex for reading from the HX711, in case multiple threads in client
-        # software try to access get values from the class at the same time.
-        self.readRock = threading.Lock()
-
+        # Think about whether this is necessary.
         time.sleep(1)
 
         
@@ -78,10 +79,7 @@ class HX711:
        value = GPIO.input(self.DOUT)
 
        # Convert Boolean to int and return it.
-       if value:
-          return 1
-       else:
-          return 0
+       return int(value)
 
 
     def readNextByte(self):
@@ -125,7 +123,8 @@ class HX711:
         # serial interface.
         self.readLock.release()           
 
-        # Depending on how we're configured, return and orderd list of raw byte values.
+        # Depending on how we're configured, return an orderd list of raw byte
+        # values.
         if self.byte_format == 'LSB':
            return [thirdByte, secondByte, firstByte]
         else:
@@ -159,11 +158,16 @@ class HX711:
 
     
     def read_average(self, times=3):
+        # Make sure we've been asked to take a rational amount of samples.
+        if times <= 0:
+            print "HX711().read_average(): times must >= 1!!  Assuming value of 1."
+            times = 1
+
         # If we're only average across one value, just read it and return it.
         if times == 1:
             return self.read_long()
 
-        # If we're averages across a low amount of values, just take an
+        # If we're averaging across a low amount of values, just take an
         # arithmetic mean.
         if times < 5:
             values = long(0)
