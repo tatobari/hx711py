@@ -76,11 +76,13 @@ class HX711:
 
         24BitMSBIndex = 1
         32BitMSBIndex = 0
+
         if self.byte_format == 'MSB':
             24BitMSBIndex = 2
             32BitMSBIndex = 3
         
         dataBytes[32BitMSBIndex] = 0x00
+        
         if dataBytes[24BitMSBIndex] & 0x80:
             dataBytes[32BitMSBIndex] = 0xff
 
