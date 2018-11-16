@@ -31,6 +31,10 @@ hx.set_reference_unit(92)
 hx.reset()
 hx.tare()
 
+# to use both channels, you'll need to tare them both
+#hx.tare_A()
+#hx.tare_B()
+
 while True:
     try:
         # These three lines are usefull to debug wether to use MSB or LSB in the reading formats
@@ -43,6 +47,12 @@ while True:
         # Prints the weight. Comment if you're debbuging the MSB and LSB issue.
         val = hx.get_weight(5)
         print val
+
+        # To get weight from both channels (if you have load cells hooked up 
+        # to both channel A and B), do something like this
+        #val_A = hx.get_weight_A(5)
+        #val_B = hx.get_weight_B(5)
+        #print "A: %s  B: %s" % ( val_A, val_B )
 
         hx.power_down()
         hx.power_up()
