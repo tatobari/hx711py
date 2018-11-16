@@ -26,10 +26,10 @@ hx.set_reading_format("MSB", "MSB")
 # and I got numbers around 184000 when I added 2kg. So, according to the rule of thirds:
 # If 2000 grams is 184000 then 1000 grams is 184000 / 2000 = 92.
 #hx.set_reference_unit(113)
-hx.set_reference_unit(92)
+hx.set_reference_unit(1)
 
 hx.reset()
-hx.tare()
+#hx.tare()
 
 # to use both channels, you'll need to tare them both
 #hx.tare_A()
@@ -45,7 +45,8 @@ while True:
         #print binary_string + " " + np_arr8_string
         
         # Prints the weight. Comment if you're debbuging the MSB and LSB issue.
-        val = hx.get_weight(5)
+        # val = hx.get_weight(5)
+	val = hx.read_long()
         print val
 
         # To get weight from both channels (if you have load cells hooked up 
@@ -56,6 +57,6 @@ while True:
 
         hx.power_down()
         hx.power_up()
-        time.sleep(0.5)
+        time.sleep(0.1)
     except (KeyboardInterrupt, SystemExit):
         cleanAndExit()

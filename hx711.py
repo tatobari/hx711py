@@ -25,7 +25,8 @@ class HX711:
         self.lastVal = long(0)
 
         self.isNegative = False
-        self.MSBIndex24Bit = 1
+        self.MSBindex24Bit = 2
+        self.MSBindex32Bit = 3
 
         self.LSByte = [0, 3, 1]
         self.MSByte = [2, -1, -1]
@@ -70,20 +71,12 @@ class HX711:
             return 32
 
 
-    def createBoolList(self, size=8):
-        ret = []
-        for i in range(size):
-            ret.append(False)
-        return ret
-
-
     def read(self):
         while not self.is_ready():
             # print("WAITING")
             pass
 
-        dataBits = [
-            self.createBoolList(), self.createBoolList(), self.createBoolList()]
+        dataBits = numpy.zeros((4, 8), dtype=bool)
         dataBytes = [0x0] * 4
 
         for j in range(self.byte_range_values[0], self.byte_range_values[1], self.byte_range_values[2]):
@@ -91,21 +84,25 @@ class HX711:
                 GPIO.output(self.PD_SCK, True)
                 dataBits[j][i] = GPIO.input(self.DOUT)
                 GPIO.output(self.PD_SCK, False)
-            dataBytes[j] = numpy.packbits(numpy.uint8(dataBits[j]))
+            dataBytes[j] = numpy.packbits(dataBits[j].astype(int))[0]
 
         # set channel and gain factor for next reading
         for i in range(self.GAIN):
             GPIO.output(self.PD_SCK, True)
             GPIO.output(self.PD_SCK, False)
 
-        self.MSBIndex24Bit = 2
+        self.MSBindex24Bit = 2
+        self.MSBindex32Bit = 3
         self.isNegative = False
 
         if self.byte_format == 'LSB':
-            self.MSBIndex24Bit = 1
+            self.MSBindex24Bit = 1
+            self.MSBindex32Bit = 0
         
-        if dataBytes[self.MSBIndex24Bit] & 0x80:
+        if dataBytes[self.MSBindex24Bit] & 0x80:
             self.isNegative = True
+
+	dataBytes[self.MSBindex32Bit] = numpy.packbits(dataBits[self.MSBindex32Bit].astype(int))[0]
 
         return dataBytes
 
@@ -145,13 +142,13 @@ class HX711:
         np_arr8 = self.read_np_arr8()
 
         if self.isNegative:
-            np_arr8[self.MSBIndex24Bit] ^= 0x80
+            np_arr8[self.MSBindex24Bit] ^= 0x80
 
         np_arr32 = np_arr8.view('uint32')
         self.lastVal = long(np_arr32)
 
         if self.isNegative:
-            self.lastVal = self.lastVal * -1
+            self.lastVal = long(self.lastVal) * long(-1)
 
         return self.lastVal
 
