@@ -24,13 +24,16 @@ class HX711:
         self.OFFSET_B = 1
         self.lastVal = long(0)
 
-        self.LSByte = [3, 0, -1]
-        self.MSByte = [0, 3, 1]
+        self.isNegative = False
+        self.MSBIndex24Bit = 1
+
+        self.LSByte = [0, 3, 1]
+        self.MSByte = [2, -1, -1]
 
         self.MSBit = [0, 8, 1]
         self.LSBit = [7, -1, -1]
 
-        self.byte_format = 'LSB'
+        self.byte_format = 'MSB'
         self.bit_format = 'MSB'
 
         self.byte_range_values = self.LSByte
@@ -80,7 +83,7 @@ class HX711:
             pass
 
         dataBits = [
-            self.createBoolList(), self.createBoolList(), self.createBoolList(), self.createBoolList()]
+            self.createBoolList(), self.createBoolList(), self.createBoolList()]
         dataBytes = [0x0] * 4
 
         for j in range(self.byte_range_values[0], self.byte_range_values[1], self.byte_range_values[2]):
@@ -95,17 +98,14 @@ class HX711:
             GPIO.output(self.PD_SCK, True)
             GPIO.output(self.PD_SCK, False)
 
-        MSBIndex24Bit = 1
-        MSBIndex32Bit = 0
+        self.MSBIndex24Bit = 2
+        self.isNegative = False
 
-        if self.byte_format == 'MSB':
-            MSBIndex24Bit = 2
-            MSBIndex32Bit = 3
-        
-        dataBytes[MSBIndex32Bit] = 0x00
+        if self.byte_format == 'LSB':
+            self.MSBIndex24Bit = 1
         
         if dataBytes[MSBIndex24Bit] & 0x80:
-            dataBytes[MSBIndex32Bit] = 0xff
+            self.isNegative = True
 
         return dataBytes
 
@@ -143,10 +143,17 @@ class HX711:
 
     def read_long(self):
         np_arr8 = self.read_np_arr8()
-        np_arr32 = np_arr8.view('uint32')
-        self.lastVal = np_arr32
 
-        return long(self.lastVal)
+        if self.isNegative:
+            np_arr8[self.MSBIndex24Bit] ^= 0x80
+
+        np_arr32 = np_arr8.view('uint32')
+        self.lastVal = long(np_arr32)
+
+        if self.isNegative:
+            self.lastVal = self.lastVal * -1
+
+        return self.lastVal
 
 
     def read_average(self, times=3):
