@@ -80,7 +80,7 @@ class HX711:
             pass
 
         dataBits = [
-            self.createBoolList(), self.createBoolList(), self.createBoolList()]
+            self.createBoolList(), self.createBoolList(), self.createBoolList(), self.createBoolList()]
         dataBytes = [0x0] * 4
 
         for j in range(self.byte_range_values[0], self.byte_range_values[1], self.byte_range_values[2]):
