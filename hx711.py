@@ -104,7 +104,7 @@ class HX711:
         if self.byte_format == 'LSB':
             self.MSBIndex24Bit = 1
         
-        if dataBytes[MSBIndex24Bit] & 0x80:
+        if dataBytes[self.MSBIndex24Bit] & 0x80:
             self.isNegative = True
 
         return dataBytes
