@@ -24,7 +24,7 @@ class HX711:
         self.OFFSET_B = 1
         self.lastVal = long(0)
 
-        self.LSByte = [2, -1, -1]
+        self.LSByte = [3, 0, -1]
         self.MSByte = [0, 3, 1]
 
         self.MSBit = [0, 8, 1]
@@ -95,11 +95,17 @@ class HX711:
             GPIO.output(self.PD_SCK, True)
             GPIO.output(self.PD_SCK, False)
 
-        # check for all 1
-        # if all(item is True for item in dataBits[0]):
-        #    return long(self.lastVal)
+        MSBIndex24Bit = 1
+        MSBIndex32Bit = 0
 
-        dataBytes[2] ^= 0x80
+        if self.byte_format == 'MSB':
+            MSBIndex24Bit = 2
+            MSBIndex32Bit = 3
+        
+        dataBytes[MSBIndex32Bit] = 0x00
+        
+        if dataBytes[MSBIndex24Bit] & 0x80:
+            dataBytes[MSBIndex32Bit] = 0xff
 
         return dataBytes
 

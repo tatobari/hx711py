@@ -1,19 +1,11 @@
-hx711.py
---------
-Forked from https://github.com/tatobari/hx711py to add support for tare/offsets
-for both channels of a 2-channel HX711.
+# HX711 for Raspbery Py
+----
+Quick code credited to [underdoeg](https://github.com/underdoeg/)'s [Gist HX711.py](https://gist.github.com/underdoeg/98a38b54f889fce2b237).
+I've only made a few modifications on the way the captured bits are processed and to support Two's Complement, which it didn't.
 
-Original tare(), set_offset(), set_reference_unit(), get_value(), get_weight()
-functions call their channel A versions to retain backwards compatibility.  
-Likewise, self.OFFSET and self.REFERENCE_UNIT are updated whenever the channel A
-versions are updated, also for compatibility.
-
-I also added a read_median() function that works like the current read_average()
-function, but returns the median of the samples instead of the average.  The
-hope is that this method will help smooth out some spikes in the data that I
-think are CPU load related (I'm using this on a Pi Zero W).  The tare() and
-get_value() functions have been converted to use this method instead of 
-read_average().
+Instructions
+------------
+Check example.py to see how it works.
 
 Installation
 ------------
@@ -34,15 +26,3 @@ get_value_B() and get_weight_B() functions do this for you.
 This info was obtained from an HX711 datasheet located at
 https://cdn.sparkfun.com/datasheets/Sensors/ForceFlex/hx711_english.pdf
 
-
-Original README
----------------
-
-Info
-----
-Quick code credited to Philip Whitfield  "https://github.com/underdoeg/".
-I've only made a few modifications on the way the captured bits are processed.
-
-Instructions
-------------
-Check example.py to see how it works.
