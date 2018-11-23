@@ -98,11 +98,11 @@ class HX711:
         if self.byte_format == 'LSB':
             self.MSBindex24Bit = 1
             self.MSBindex32Bit = 0
-        
+
         if dataBytes[self.MSBindex24Bit] & 0x80:
             self.isNegative = True
 
-	dataBytes[self.MSBindex32Bit] = numpy.packbits(dataBits[self.MSBindex32Bit].astype(int))[0]
+        dataBytes[self.MSBindex32Bit] = numpy.packbits(dataBits[self.MSBindex32Bit].astype(int))[0]
 
         return dataBytes
 
