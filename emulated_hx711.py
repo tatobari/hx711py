@@ -15,6 +15,7 @@ class HX711:
         self.sampleRateHz = 80.0
         self.resetTimeStamp = time.time()
         self.sampleCount = 0
+        self.simulateTare = False
 
         # Mutex for reading from the HX711, in case multiple threads in client
         # software try to access get values from the class at the same time.
@@ -32,6 +33,7 @@ class HX711:
         self.bit_format = 'MSB'
 
         self.set_gain(gain)
+
 
 
 
@@ -198,7 +200,11 @@ class HX711:
         return value
 
     
-    def tare(self, times=15):      
+    def tare(self, times=15):
+        # If we aren't simulating Taring because it takes too long, just skip it.
+        if not self.simulateTare:
+            return 0
+
         # Backup REFERENCE_UNIT value
         reference_unit = self.REFERENCE_UNIT
         self.set_reference_unit(1)
@@ -285,8 +291,8 @@ class HX711:
 
 
     def reset(self):
-        self.power_down()
-        self.power_up()
+        # self.power_down()
+        # self.power_up()
 
         # Mark time when we were reset.  We'll use this for sample generation.
         self.resetTimeStamp = time.time()
