@@ -215,7 +215,7 @@ class HX711:
        valueList.sort()
 
        # If times is odd we can just take the centre value.
-       if (times / 2) * 2 == times:
+       if (times & 0x1) == 0x1:
           return valueList[len(valueList) / 2] 
        else:
           # If times is even we have to take the arithmetic mean of
