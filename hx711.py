@@ -5,7 +5,9 @@ import time
 import threading
 
 
+
 class HX711:
+
     def __init__(self, dout, pd_sck, gain=128):
         self.PD_SCK = pd_sck
 
@@ -20,13 +22,18 @@ class HX711:
         GPIO.setup(self.DOUT, GPIO.IN)
 
         self.GAIN = 0
-        self.REFERENCE_UNIT = 1  # The value returned by the hx711 that corresponds to your reference unit AFTER dividing by the SCALE.
-        
+
+        # The value returned by the hx711 that corresponds to your reference
+        # unit AFTER dividing by the SCALE.
+        self.REFERENCE_UNIT = 1
+        self.REFERENCE_UNIT_B = 1
+
         self.OFFSET = 1
+        self.OFFSET_B = 1
         self.lastVal = long(0)
 
         self.DEBUG_PRINTING = False
-        
+
         self.byte_format = 'MSB'
         self.bit_format = 'MSB'
 
@@ -160,21 +167,16 @@ class HX711:
     def read_average(self, times=3):
         # Make sure we've been asked to take a rational amount of samples.
         if times <= 0:
-            print "HX711().read_average(): times must >= 1!!  Assuming value of 1."
-            times = 1
+            raise ValueError("HX711()::read_average(): times must >= 1!!")
 
         # If we're only average across one value, just read it and return it.
         if times == 1:
             return self.read_long()
 
-        # If we're averaging across a low amount of values, just take an
-        # arithmetic mean.
+        # If we're averaging across a low amount of values, just take the
+        # median.
         if times < 5:
-            values = long(0)
-            for i in range(times):
-                values += self.read_long()
-
-            return values / times
+            return self.read_median(times)
 
         # If we're taking a lot of samples, we'll collect them in a list, remove
         # the outliers, then take the mean of the remaining set.
@@ -194,70 +196,177 @@ class HX711:
         # Return the mean of remaining samples.
         return sum(valueList) / len(valueList)
 
-    
-    def get_value(self, times=3):
-        return self.read_average(times) - self.OFFSET
 
-    
+    # A median-based read method, might help when getting random value spikes
+    # for unknown or CPU-related reasons
+    def read_median(self, times=3):
+
+       if times < 3:
+          raise ValueError("HX711::read_median() times value must be at least 3!")
+        
+       valueList = []
+
+       for x in range(times):
+           valueList += [self.read_long()]
+
+       valueList.sort()
+
+       return valueList[len(valueList) / 2] 
+
+
+    # Compatibility function, uses channel A version
+    def get_value(self, times=3):
+        return self.get_value_A(times)
+
+
+    def get_value_A(self, times=3):
+        return self.read_median(times) - self.OFFSET
+
+
+    def get_value_B(self, times=3):
+        # for channel B, we need to set_gain(32)
+        g = self.get_gain()
+        self.set_gain(32)
+        value = self.read_median(times) - self.OFFSET_B
+        self.set_gain(g)
+        return value
+
+    # Compatibility function, uses channel A version
     def get_weight(self, times=3):
-        value = self.get_value(times)
+        return self.get_weight_A(times)
+
+
+    def get_weight_A(self, times=3):
+        value = self.get_value_A(times)
         value = value / self.REFERENCE_UNIT
         return value
 
+    def get_weight_B(self, times=3):
+        value = self.get_value_B(times)
+        value = value / self.REFERENCE_UNIT_B
+        return value
+
     
-    def tare(self, times=15):      
+    # Sets tare for channel A for compatibility purposes
+    def tare(self, times=15):
+        self.tare_A(times)
+    
+    
+    def tare_A(self, times=15):
         # Backup REFERENCE_UNIT value
-        reference_unit = self.REFERENCE_UNIT
-        self.set_reference_unit(1)
+        backupReferenceUnit = self.get_reference_unit_A()
+        self.set_reference_unit_A(1)
+        
+        value = self.read_average(times)
+
+        if self.DEBUG_PRINTING:
+            print "Tare A value:", value
+        
+        self.set_offset_A(value)
+
+        # Restore the reference unit, now that we've got our offset.
+        self.set_reference_unit_A(backupReferenceUnit)
+
+        return value
+
+
+    def tare_B(self, times=15):
+        # Backup REFERENCE_UNIT value
+        backupReferenceUnit = self.get_reference_unit_B()
+        self.set_reference_unit_B(1)
+
+        # for channel B, we need to set_gain(32)
+        backupGain = self.get_gain()
+        self.set_gain(32)
 
         value = self.read_average(times)
 
         if self.DEBUG_PRINTING:
-            print "Tare value:", value
+            print "Tare B value:", value
         
-        self.set_offset(value)
+        self.set_offset_B(value)
 
-        # Restore the reference unit, now that we've got our offset.
-        self.set_reference_unit(reference_unit)
+        # Restore gain/channel/reference unit settings.
+        self.set_gain(backupGain)
+        self.set_reference_unit_B(backupReferenceUnit)
+       
+        return value
 
-        return value;
 
     
     def set_reading_format(self, byte_format="LSB", bit_format="MSB"):
-
         if byte_format == "LSB":
             self.byte_format = byte_format
         elif byte_format == "MSB":
             self.byte_format = byte_format
         else:
-            print "Unrecognised byte_format: \"%s\"" % byte_format
+            raise ValueError("Unrecognised byte_format: \"%s\"" % byte_format)
 
         if bit_format == "LSB":
             self.bit_format = bit_format
         elif bit_format == "MSB":
             self.bit_format = bit_format
         else:
-            print "Unrecognised bit_format: \"%s\"" % bit_format
+            raise ValueError("Unrecognised bitformat: \"%s\"" % bit_format)
 
             
 
+
+    # sets offset for channel A for compatibility reasons
     def set_offset(self, offset):
+        self.set_offset_A(offset)
+
+    def set_offset_A(self, offset):
         self.OFFSET = offset
 
-        
+    def set_offset_B(self, offset):
+        self.OFFSET_B = offset
+
     def get_offset(self):
         return self.OFFSET
 
+    def get_offset_A(self):
+        return self.OFFSET_A
+
+    def get_offset_B(self):
+        return self.OFFSET_B
+
+
     
     def set_reference_unit(self, reference_unit):
+        self.set_reference_unit_A(reference_unit)
+
+        
+    def set_reference_unit_A(self, reference_unit):
         # Make sure we aren't asked to use an invalid reference unit.
         if reference_unit == 0:
-            print "HX711().set_reference_unit(): Can't use 0 as a reference unit!!"
+            raise ValueError("HX711::set_reference_unit_A() can't accept 0 as a reference unit!")
             return
 
         self.REFERENCE_UNIT = reference_unit
 
+        
+    def set_reference_unit_B(self, reference_unit):
+        # Make sure we aren't asked to use an invalid reference unit.
+        if reference_unit == 0:
+            raise ValueError("HX711::set_reference_unit_A() can't accept 0 as a reference unit!")
+            return
 
+        self.REFERENCE_UNIT_B = reference_unit
+
+
+    def set_reference_unit(self):
+        return get_reference_unit_A()
+
+        
+    def get_reference_unit_A(self):
+        return self.REFERENCE_UNIT
+
+        
+    def get_reference_unit_B(self):
+        return self.REFERENCE_UNIT_B
+        
+        
     def power_down(self):
         # Wait for and get the Read Lock, incase another thread is already
         # driving the HX711 serial interface.
