@@ -260,7 +260,7 @@ class HX711:
         value = self.read_average(times)
 
         if self.DEBUG_PRINTING:
-            print "Tare value:", value
+            print "Tare A value:", value
         
         self.set_offset_A(value)
 
@@ -272,18 +272,24 @@ class HX711:
 
     def tare_B(self, times=15):
         # Backup REFERENCE_UNIT value
-        reference_unit = self.REFERENCE_UNIT_B
+        backupReferenceUnit = self.get_reference_unit_B()
         self.set_reference_unit_B(1)
 
         # for channel B, we need to set_gain(32)
-        g = self.get_gain()
+        backupGain = self.get_gain()
         self.set_gain(32)
 
-        value = self.read_median(times)
+        value = self.read_average(times)
+
+        if self.DEBUG_PRINTING:
+            print "Tare B value:", value
+        
         self.set_offset_B(value)
 
-        self.set_gain(g)
-        self.set_reference_unit_B(reference_unit)
+        # Restore gain/channel/reference unit settings.
+        self.set_gain(backupGain)
+        self.set_reference_unit_B(backupReferenceUnit)
+       
         return value
 
 
