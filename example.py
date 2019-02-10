@@ -37,22 +37,14 @@ hx.set_reading_format("MSB", "MSB")
 # and I got numbers around 184000 when I added 2kg. So, according to the rule of thirds:
 # If 2000 grams is 184000 then 1000 grams is 184000 / 2000 = 92.
 #hx.set_reference_unit(113)
-#hx.set_reference_unit(15)
+hx.set_reference_unit(1)
 
 hx.reset()
+#hx.tare()
 
-print "Taring:"
-tareResult = hx.tare(80)
-
-print "Tared:", tareResult
-
-###hx.set_offset(2000)
-
-##sys.exit()
-
-movingAverage = 0.0
-
-###hx.set_gain(128)
+# to use both channels, you'll need to tare them both
+#hx.tare_A()
+#hx.tare_B()
 
 while True:
     try:
@@ -65,31 +57,19 @@ while True:
             print binary_string + " " + np_arr8_string
         
         # Prints the weight. Comment if you're debbuging the MSB and LSB issue.
-        if False:
-            val = hx.get_weight(times=1)
-            print val
+        # val = hx.get_weight(5)
+	val = hx.read_long()
+        print val
 
-        if False:
-            val = hx.get_weight(30)
-            print "My read:", val / 1000.0, "kg"
+        # To get weight from both channels (if you have load cells hooked up 
+        # to both channel A and B), do something like this
+        #val_A = hx.get_weight_A(5)
+        #val_B = hx.get_weight_B(5)
+        #print "A: %s  B: %s" % ( val_A, val_B )
 
-            
-        if True:
-            val = hx.get_value(30)
-            print "My read:", val
+        hx.power_down()
+        hx.power_up()
+        time.sleep(0.1)
 
-
-        
-        # movingAverage *= 0.9
-        # movingAverage += 0.1 * val
-        # print "MY READ:", val, "MA:", movingAverage, "  --  ", movingAverage / 1000.0, "kg"
-        ###print "offset=", hx.get_offset()
-        ###print "gain=", hx.get_gain()
-        
-            
-        if False:
-            hx.power_down()
-            hx.power_up()
-            time.sleep(0.5)
     except (KeyboardInterrupt, SystemExit):
         cleanAndExit()
