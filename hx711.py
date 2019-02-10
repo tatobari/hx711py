@@ -200,18 +200,28 @@ class HX711:
     # A median-based read method, might help when getting random value spikes
     # for unknown or CPU-related reasons
     def read_median(self, times=3):
+       if times <= 0:
+          raise ValueError("HX711::read_median(): times must be greater than zero!")
+      
+       # If times == 1, just return a single reading.
+       if times == 1:
+          return self.read_long()
 
-       if times < 3:
-          raise ValueError("HX711::read_median() times value must be at least 3!")
-        
        valueList = []
 
        for x in range(times):
-           valueList += [self.read_long()]
+          valueList += [self.read_long()]
 
        valueList.sort()
 
-       return valueList[len(valueList) / 2] 
+       # If times is odd we can just take the centre value.
+       if (times / 2) * 2 == times:
+          return valueList[len(valueList) / 2] 
+       else:
+          # If times is even we have to take the arithmetic mean of
+          # the two middle values.
+          midpoint = len(valueList) / 2
+          return sum(valueList[midpoint:midpoint+2]) / 2.0
 
 
     # Compatibility function, uses channel A version
@@ -355,7 +365,7 @@ class HX711:
         self.REFERENCE_UNIT_B = reference_unit
 
 
-    def set_reference_unit(self):
+    def get_reference_unit(self):
         return get_reference_unit_A()
 
         
