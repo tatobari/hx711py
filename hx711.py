@@ -333,10 +333,10 @@ class HX711:
         self.OFFSET_B = offset
 
     def get_offset(self):
-        return self.OFFSET
+        return self.get_offset_A()
 
     def get_offset_A(self):
-        return self.OFFSET_A
+        return self.OFFSET
 
     def get_offset_B(self):
         return self.OFFSET_B
