@@ -12,12 +12,12 @@ else:
     from emulated_hx711 import HX711
 
 def cleanAndExit():
-    print "Cleaning..."
+    print("Cleaning...")
 
     if not EMULATE_HX711:
         GPIO.cleanup()
         
-    print "Bye!"
+    print("Bye!")
     sys.exit()
 
 hx = HX711(5, 6)
@@ -43,7 +43,7 @@ hx.reset()
 
 hx.tare()
 
-print "Tare done! Add weight now..."
+print("Tare done! Add weight now...")
 
 # to use both channels, you'll need to tare them both
 #hx.tare_A()
