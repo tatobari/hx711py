@@ -5,6 +5,8 @@ import sys
 
 EMULATE_HX711=False
 
+referenceUnit = 1
+
 if not EMULATE_HX711:
     import RPi.GPIO as GPIO
     from hx711 import HX711
@@ -37,7 +39,7 @@ hx.set_reading_format("MSB", "MSB")
 # and I got numbers around 184000 when I added 2kg. So, according to the rule of thirds:
 # If 2000 grams is 184000 then 1000 grams is 184000 / 2000 = 92.
 #hx.set_reference_unit(113)
-hx.set_reference_unit(1)
+hx.set_reference_unit(referenceUnit)
 
 hx.reset()
 
