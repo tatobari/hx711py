@@ -230,14 +230,14 @@ class HX711:
 
 
     def get_value_A(self, times=3):
-        return self.read_median(times) - self.OFFSET
+        return self.read_median(times) - self.get_offset_A()
 
 
     def get_value_B(self, times=3):
         # for channel B, we need to set_gain(32)
         g = self.get_gain()
         self.set_gain(32)
-        value = self.read_median(times) - self.OFFSET_B
+        value = self.read_median(times) - self.get_offset_B()
         self.set_gain(g)
         return value
 
