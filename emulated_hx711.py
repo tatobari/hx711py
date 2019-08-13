@@ -132,7 +132,7 @@ class HX711:
 
 
         if self.DEBUG_PRINTING:
-            print dataBytes,
+            print(dataBytes,)
         
         # Join the raw bytes into a single 24bit 2s complement value.
         twosComplementValue = ((dataBytes[0] << 16) |
@@ -140,7 +140,7 @@ class HX711:
                                dataBytes[2])
 
         if self.DEBUG_PRINTING:
-            print "Twos: 0x%06x" % twosComplementValue
+            print("Twos: 0x%06x" % twosComplementValue)
         
         # Convert from 24bit twos-complement to a signed value.
         signedIntValue = self.convertFromTwosComplement24bit(twosComplementValue)
@@ -149,13 +149,13 @@ class HX711:
         self.lastVal = signedIntValue
 
         # Return the sample value we've read from the HX711.
-        return long(signedIntValue)
+        return int(signedIntValue)
 
     
     def read_average(self, times=3):
         # Make sure we've been asked to take a rational amount of samples.
         if times <= 0:
-            print "HX711().read_average(): times must >= 1!!  Assuming value of 1."
+            print("HX711().read_average(): times must >= 1!!  Assuming value of 1.")
             times = 1
 
         # If we're only average across one value, just read it and return it.
@@ -165,7 +165,7 @@ class HX711:
         # If we're averaging across a low amount of values, just take an
         # arithmetic mean.
         if times < 5:
-            values = long(0)
+            values = int(0)
             for i in range(times):
                 values += self.read_long()
 
@@ -212,7 +212,7 @@ class HX711:
         value = self.read_average(times)
 
         if self.DEBUG_PRINTING:
-            print "Tare value:", value
+            print("Tare value:", value)
         
         self.set_offset(value)
 
@@ -229,14 +229,14 @@ class HX711:
         elif byte_format == "MSB":
             self.byte_format = byte_format
         else:
-            print "Unrecognised byte_format: \"%s\"" % byte_format
+            print("Unrecognised byte_format: \"%s\"" % byte_format)
 
         if bit_format == "LSB":
             self.bit_format = bit_format
         elif bit_format == "MSB":
             self.bit_format = bit_format
         else:
-            print "Unrecognised bit_format: \"%s\"" % bit_format
+            print("Unrecognised bit_format: \"%s\"" % bit_format)
 
             
 
@@ -251,7 +251,7 @@ class HX711:
     def set_reference_unit(self, reference_unit):
         # Make sure we aren't asked to use an invalid reference unit.
         if reference_unit == 0:
-            print "HX711().set_reference_unit(): Can't use 0 as a reference unit!!"
+            print("HX711().set_reference_unit(): Can't use 0 as a reference unit!!")
             return
 
         self.REFERENCE_UNIT = reference_unit
@@ -318,7 +318,7 @@ class HX711:
 
        if random.randrange(0, BIG_ERROR_SAMPLE_FREQUENCY) == 0:
           sample = random.sample(BIG_ERROR_SAMPLES, 1)[0]
-          print "Sample %d: Injecting %f as a random bad sample." % (self.sampleCount, sample)
+          print("Sample %d: Injecting %f as a random bad sample." % (self.sampleCount, sample))
 
        sample *= 1000
 
