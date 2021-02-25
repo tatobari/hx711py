@@ -3,6 +3,10 @@
 Quick code credited to [underdoeg](https://github.com/underdoeg/)'s [Gist HX711.py](https://gist.github.com/underdoeg/98a38b54f889fce2b237).
 I've only made a few modifications on the way the captured bits are processed and to support Two's Complement, which it didn't.
 
+Update: 25/02/2021
+----
+For the past years I haven't been able to maintain this library because I had too much workload. Now I'm back and I've been working on a few fixes and modifications to simplify this library, and I might be commiting the branch by mid-March. I will also publish it to PIP.
+
 Instructions
 ------------
 Check example.py to see how it works.
