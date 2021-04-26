@@ -189,22 +189,24 @@ if __name__ == "__main__":
 
     last_count = -1
     scale_read = 0
+
     def scale_read_cb(count, mode, reading):
         if count!=last_count:
             scale_read = reading
             last_count = count
 
-    # open pigpio: sudo pigpiod
+    # open daemon of pigpio: sudo pigpiod
     pi = pigpio.pi()
     if not pi.connected:
         exit(0)
 
-    s = HX711(pi, DATA_PIN=5, CLOCK_PIN=6, mode=HX711.CH_A_GAIN_128, callback=scale_read_cb)
+    # pin in GPIO number
+    scale = HX711(pi, DATA_PIN=5, CLOCK_PIN=6, mode=HX711.CH_A_GAIN_128, callback=scale_read_cb)
 
     try:
         print("start with CH_A_GAIN_128 and callback")
 
-        s.start()
+        scale.start()
         time.sleep(2)
         print("scale start!!")
 
@@ -221,7 +223,7 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
         pass
 
-    s.pause()
-    s.cancel()
+    scale.pause()
+    scale.cancel()
     pi.stop()
 
