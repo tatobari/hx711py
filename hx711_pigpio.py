@@ -1,6 +1,6 @@
 import pigpio # http://abyz.co.uk/rpi/pigpio/python.html
 import time
-         
+
 class HX711:
     CH_A_GAIN_64  = 0 # Channel A gain 64
     CH_A_GAIN_128 = 1 # Channel A gain 128
@@ -169,7 +169,6 @@ class HX711:
                                     self.callback(self._count, self._rmode, self._rval)
                             else:
                                 self._skip_readings -= 1
-
         else:
             self._data_level = level
             if not self._paused:
@@ -182,48 +181,64 @@ class HX711:
                             self._clocks = 0
                             self._value = 0
                             self._sent += 1
-                    self._data_tick = tick
-                    self._previous_edge_long = current_edge_long
+            try:
+                self._previous_edge_long = current_edge_long
+                self._data_tick = tick
+            except:
+                print("Over time for reading")
+            
 
 if __name__ == "__main__":
+    
+    class WeighingSystem(object):
 
-    last_count = -1
-    scale_read = 0
+        def __init__(self, pi):
+            self.last_count1 = -1
+            self.last_count2 = -1
+            self.scale_read1 = 0
+            self.scale_read2 = 0
+            self.s1 = HX711(pi, DATA_PIN=5, CLOCK_PIN=6, mode=HX711.CH_A_GAIN_128, callback=self.scale1_read_cb)
+            self.s2 = HX711(pi, DATA_PIN=13, CLOCK_PIN=19, mode=HX711.CH_A_GAIN_128, callback=self.scale2_read_cb)
 
-    def scale_read_cb(count, mode, reading):
-        if count!=last_count:
-            scale_read = reading
-            last_count = count
+            self.s1.start()
+            time.sleep(2)
+            self.s2.start()
+            time.sleep(2)
+            print("both start!!")
 
-    # open daemon of pigpio: sudo pigpiod
+        def scale1_read_cb(self, count, mode, reading):
+            if count!=self.last_count1:
+                self.scale_read1 = reading
+                self.last_count1 = count
+
+        def scale2_read_cb(self, count, mode, reading):
+            if count!=self.last_count2:
+                self.scale_read2 = reading
+                self.last_count2 = count
+
     pi = pigpio.pi()
     if not pi.connected:
         exit(0)
 
-    # pin in GPIO number
-    scale = HX711(pi, DATA_PIN=5, CLOCK_PIN=6, mode=HX711.CH_A_GAIN_128, callback=scale_read_cb)
-
+    weighing_system = WeighingSystem(pi)
+   
     try:
         print("start with CH_A_GAIN_128 and callback")
+        
+        start = time.time()
+        while True:
+            # if time.time() - start > 60:
+            print("scale1:", weighing_system.scale_read1)
+            print("scale2:", weighing_system.scale_read2)
+                # start = time.time()
+            time.sleep(0.1)
 
-        scale.start()
-        time.sleep(2)
-        print("scale start!!")
+    except Exception as e:
+        print("error: ", e)
 
-        stop = time.time() + 3600
-
-        while time.time() < stop:
-            # start = time.time()
-            print("Loop")
-            
-            print("scale reading: ", scale_read)
-            # print("time of reading: ", time.time()-start)
-            time.sleep(0.05)
-
-    except KeyboardInterrupt:
-        pass
-
-    scale.pause()
-    scale.cancel()
+    weighing_system.s1.pause()
+    weighing_system.s1.cancel()
+    weighing_system.s2.pause()
+    weighing_system.s2.cancel()
     pi.stop()
 
