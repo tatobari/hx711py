@@ -1,4 +1,4 @@
-# HX711 for Raspbery Py
+# HX711 for Raspberry Pi
 ----
 Quick code credited to [underdoeg](https://github.com/underdoeg/)'s [Gist HX711.py](https://gist.github.com/underdoeg/98a38b54f889fce2b237).
 I've only made a few modifications on the way the captured bits are processed and to support Two's Complement, which it didn't.
@@ -29,4 +29,3 @@ get_value_B() and get_weight_B() functions do this for you.
 
 This info was obtained from an HX711 datasheet located at
 https://cdn.sparkfun.com/datasheets/Sensors/ForceFlex/hx711_english.pdf
-

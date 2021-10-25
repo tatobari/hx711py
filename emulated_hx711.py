@@ -20,15 +20,15 @@ class HX711:
         # Mutex for reading from the HX711, in case multiple threads in client
         # software try to access get values from the class at the same time.
         self.readLock = threading.Lock()
-        
+
         self.GAIN = 0
         self.REFERENCE_UNIT = 1  # The value returned by the hx711 that corresponds to your reference unit AFTER dividing by the SCALE.
-        
+
         self.OFFSET = 1
         self.lastVal = long(0)
 
         self.DEBUG_PRINTING = False
-        
+
         self.byte_format = 'MSB'
         self.bit_format = 'MSB'
 
@@ -41,28 +41,28 @@ class HX711:
         time.sleep(1)
 
     def convertToTwosComplement24bit(self, inputValue):
-       # HX711 has saturating logic.
-       if inputValue >= 0x7fffff:
-          return 0x7fffff
+        # HX711 has saturating logic.
+        if inputValue >= 0x7fffff:
+            return 0x7fffff
 
-       # If it's a positive value, just return it, masked with our max value.
-       if inputValue >= 0:
-          return inputValue & 0x7fffff
+        # If it's a positive value, just return it, masked with our max value.
+        if inputValue >= 0:
+            return inputValue & 0x7fffff
 
-       if inputValue < 0:
-          # HX711 has saturating logic.
-          if inputValue < -0x800000:
-             inputValue = -0x800000
+        if inputValue < 0:
+            # HX711 has saturating logic.
+            if inputValue < -0x800000:
+                inputValue = -0x800000
 
-          diff = inputValue + 0x800000
+            diff = inputValue + 0x800000
 
-          return 0x800000 + diff
+            return 0x800000 + diff
 
-        
+
     def convertFromTwosComplement24bit(self, inputValue):
         return -(inputValue & 0x800000) + (inputValue & 0x7fffff)
 
-    
+
     def is_ready(self):
         # Calculate how long we should be waiting between samples, given the
         # sample rate.
@@ -70,19 +70,19 @@ class HX711:
 
         return time.time() >= self.lastReadTime + sampleDelaySeconds
 
-    
+
     def set_gain(self, gain):
-        if gain is 128:
+        if gain == 128:
             self.GAIN = 1
-        elif gain is 64:
+        elif gain == 64:
             self.GAIN = 3
-        elif gain is 32:
+        elif gain == 32:
             self.GAIN = 2
 
         # Read out a set of raw bytes and throw it away.
         self.readRawBytes()
 
-        
+
     def get_gain(self):
         if self.GAIN == 1:
             return 128
@@ -93,7 +93,7 @@ class HX711:
 
         # Shouldn't get here.
         return 0
-        
+
 
     def readRawBytes(self):
         # Wait for and get the Read Lock, incase another thread is already
@@ -102,13 +102,13 @@ class HX711:
 
         # Wait until HX711 is ready for us to read a sample.
         while not self.is_ready():
-           pass
+            pass
 
         self.lastReadTime = time.time()
 
         # Generate a 24bit 2s complement sample for the virtual HX711.
         rawSample = self.convertToTwosComplement24bit(self.generateFakeSample())
-        
+
         # Read three bytes of data from the HX711.
         firstByte  = (rawSample >> 16) & 0xFF
         secondByte = (rawSample >> 8)  & 0xFF
@@ -116,14 +116,14 @@ class HX711:
 
         # Release the Read Lock, now that we've finished driving the virtual HX711
         # serial interface.
-        self.readLock.release()           
+        self.readLock.release()
 
         # Depending on how we're configured, return an orderd list of raw byte
         # values.
         if self.byte_format == 'LSB':
-           return [thirdByte, secondByte, firstByte]
+            return [thirdByte, secondByte, firstByte]
         else:
-           return [firstByte, secondByte, thirdByte]
+            return [firstByte, secondByte, thirdByte]
 
 
     def read_long(self):
@@ -132,8 +132,8 @@ class HX711:
 
 
         if self.DEBUG_PRINTING:
-            print(dataBytes,)
-        
+            print(dataBytes)
+
         # Join the raw bytes into a single 24bit 2s complement value.
         twosComplementValue = ((dataBytes[0] << 16) |
                                (dataBytes[1] << 8)  |
@@ -141,7 +141,7 @@ class HX711:
 
         if self.DEBUG_PRINTING:
             print("Twos: 0x%06x" % twosComplementValue)
-        
+
         # Convert from 24bit twos-complement to a signed value.
         signedIntValue = self.convertFromTwosComplement24bit(twosComplementValue)
 
@@ -151,7 +151,7 @@ class HX711:
         # Return the sample value we've read from the HX711.
         return int(signedIntValue)
 
-    
+
     def read_average(self, times=3):
         # Make sure we've been asked to take a rational amount of samples.
         if times <= 0:
@@ -189,17 +189,17 @@ class HX711:
         # Return the mean of remaining samples.
         return sum(valueList) / len(valueList)
 
-    
+
     def get_value(self, times=3):
         return self.read_average(times) - self.OFFSET
 
-    
+
     def get_weight(self, times=3):
         value = self.get_value(times)
         value = value / self.REFERENCE_UNIT
         return value
 
-    
+
     def tare(self, times=15):
         # If we aren't simulating Taring because it takes too long, just skip it.
         if not self.simulateTare:
@@ -213,15 +213,15 @@ class HX711:
 
         if self.DEBUG_PRINTING:
             print("Tare value:", value)
-        
+
         self.set_offset(value)
 
         # Restore the reference unit, now that we've got our offset.
         self.set_reference_unit(reference_unit)
 
-        return value;
+        return value
 
-    
+
     def set_reading_format(self, byte_format="LSB", bit_format="MSB"):
 
         if byte_format == "LSB":
@@ -238,16 +238,16 @@ class HX711:
         else:
             print("Unrecognised bit_format: \"%s\"" % bit_format)
 
-            
+
 
     def set_offset(self, offset):
         self.OFFSET = offset
 
-        
+
     def get_offset(self):
         return self.OFFSET
 
-    
+
     def set_reference_unit(self, reference_unit):
         # Make sure we aren't asked to use an invalid reference unit.
         if reference_unit == 0:
@@ -267,7 +267,7 @@ class HX711:
 
         # Release the Read Lock, now that we've finished driving the HX711
         # serial interface.
-        self.readLock.release()           
+        self.readLock.release()
 
 
     def power_up(self):
@@ -299,32 +299,32 @@ class HX711:
 
 
     def generateFakeSample(self):
-       sampleTimeStamp = time.time() - self.resetTimeStamp
+        sampleTimeStamp = time.time() - self.resetTimeStamp
 
-       noiseScale = 1.0
-       noiseValue = random.randrange(-(noiseScale * 1000),(noiseScale * 1000)) / 1000.0
-       sample     = math.sin(math.radians(sampleTimeStamp * 20)) * 72.0
+        noiseScale = 1.0
+        noiseValue = random.randrange(-(noiseScale * 1000),(noiseScale * 1000)) / 1000.0
+        sample     = math.sin(math.radians(sampleTimeStamp * 20)) * 72.0
 
-       self.sampleCount += 1
+        self.sampleCount += 1
 
-       if sample < 0.0:
-          sample = -sample
+        if sample < 0.0:
+            sample = -sample
 
-       sample += noiseValue
+        sample += noiseValue
 
-       BIG_ERROR_SAMPLE_FREQUENCY = 142
-       ###BIG_ERROR_SAMPLE_FREQUENCY = 15
-       BIG_ERROR_SAMPLES = [0.0, 40.0, 70.0, 150.0, 280.0, 580.0]
+        BIG_ERROR_SAMPLE_FREQUENCY = 142
+        ###BIG_ERROR_SAMPLE_FREQUENCY = 15
+        BIG_ERROR_SAMPLES = [0.0, 40.0, 70.0, 150.0, 280.0, 580.0]
 
-       if random.randrange(0, BIG_ERROR_SAMPLE_FREQUENCY) == 0:
-          sample = random.sample(BIG_ERROR_SAMPLES, 1)[0]
-          print("Sample %d: Injecting %f as a random bad sample." % (self.sampleCount, sample))
+        if random.randrange(0, BIG_ERROR_SAMPLE_FREQUENCY) == 0:
+            sample = random.sample(BIG_ERROR_SAMPLES, 1)[0]
+            print("Sample %d: Injecting %f as a random bad sample." % (self.sampleCount, sample))
 
-       sample *= 1000
+        sample *= 1000
 
-       sample *= self.REFERENCE_UNIT
+        sample *= self.REFERENCE_UNIT
 
-       return int(sample)
+        return int(sample)
 
 
 # EOF - emulated_hx711.py
