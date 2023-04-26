@@ -47,14 +47,14 @@ For the past years I haven't been able to maintain this library because I had to
 
 Instructions
 ------------
-Check example.py to see how it works.
+Check main.py to see how it works.
 
 Installation
 ------------
 1. Clone or download and unpack this repository
 2. In the repository directory, run
 ```
-python setup.py install
+python3 src/setup.py install
 ```
 
 Using a 2-channel HX711 module
