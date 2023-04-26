@@ -7,7 +7,7 @@ Implementation: The team has elected to design their own weight distribution sen
 
 The 'User' will be the Pro giving the lesson and is intended to be used as a tool to shed light on undesirable habits in beginner golfers.
 
-The raspberry pi interface runs off the hx711 amplifier and accompanied software for use with the raspberry pi that can be downloaded [here](https://github.com/tatobari/hx711py) or by cloning the repository
+The raspberry pi interface runs off the hx711 amplifier and accompanied software for use with the raspberry pi that can be downloaded [here](https://github.com/tatobari/hx711py) or by cloning this repository.
 
 ```
 git clone https://github.com/tatobari/hx711py
@@ -33,7 +33,10 @@ Chilo Espinoza
 [Fairways and Greens](https://fairwaysandgreens.com/)
 
 
-# HX711 for Raspbery Py
+## HX711 for Raspberry Py
+----
+This repository was forked from [Tatobari's](https://github.com/tatobari) [HX711 repo](https://github.com/tatobari/hx711py). The following is quoted from that repository's README.md with slight changes to reflect how it works within this fork. 
+
 ----
 Quick code credited to [underdoeg](https://github.com/underdoeg/)'s [Gist HX711.py](https://gist.github.com/underdoeg/98a38b54f889fce2b237).
 I've only made a few modifications on the way the captured bits are processed and to support Two's Complement, which it didn't.
