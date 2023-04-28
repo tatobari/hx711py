@@ -23,6 +23,8 @@ def main():
     exitButton.move(50, 100)
     exitButton.clicked.connect(cleanAndExit)
 
+    window.setGeometry(100, 100, 320, 200)
+    window.setWindowTitle("Golf balance window")
     window.show() # show window
     app.exec_()
 
@@ -94,7 +96,8 @@ def getVals(): # function containing the weight data collection
     hx4.tare()
 
     print("Tare done! Add weight now...")
-    while True:
+    t_end = time.time() + 10
+    while time.time() < t_end:
         try:
         # These three lines are usefull to debug wether to use MSB or LSB in the reading formats
         # for the first parameter of "hx.set_reading_format("LSB", "MSB")".
@@ -115,18 +118,18 @@ def getVals(): # function containing the weight data collection
         # to both channel A and B), do something like this
         #val_A = hx.get_weight_A(5)
         #val_B = hx.get_weight_B(5)
-            print("1: %s  2: %s 3: %s 4: %s", val1, val2, val3, val4)
+            print(val1, val2, val3, val4)
 
-            hx1.power_down()
-            hx1.power_up()
-            hx2.power_down()
-            hx2.power_up()
-            hx3.power_down()
-            hx3.power_up()
-            hx4.power_down()
-            hx4.power_up()
+        #    hx1.power_down()
+        #    hx1.power_up()
+        #    hx2.power_down()
+        #    hx2.power_up()
+        #    hx3.power_down()
+        #    hx3.power_up()
+        #    hx4.power_down()
+        #    hx4.power_up()
 
-            time.sleep(0.4)
+ #            time.sleep(0.03)
 
         except (KeyboardInterrupt, SystemExit):
             cleanAndExit()
