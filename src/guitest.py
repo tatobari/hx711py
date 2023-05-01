@@ -1,5 +1,54 @@
 import pigpio # http://abyz.co.uk/rpi/pigpio/python.html
 import time
+import sys
+from PyQt5.QtWidgets import *
+
+ 
+class WeighingSystem(object):
+
+    def __init__(self, pi):
+        self.last_count1 = -1
+        self.last_count2 = -1
+        self.last_count3 = -1
+        self.last_count4 = -1
+        self.scale_read1 = 0
+        self.scale_read2 = 0
+        self.scale_read3 = 0
+        self.scale_read4 = 0
+        self.s1 = HX711(pi, DATA_PIN=20, CLOCK_PIN=21, mode=HX711.CH_A_GAIN_128, callback=self.scale1_read_cb)
+        self.s2 = HX711(pi, DATA_PIN=13, CLOCK_PIN=19, mode=HX711.CH_A_GAIN_128, callback=self.scale2_read_cb)
+        self.s3 = HX711(pi, DATA_PIN=14, CLOCK_PIN=15, mode=HX711.CH_A_GAIN_128, callback=self.scale3_read_cb)
+        self.s4 = HX711(pi, DATA_PIN=2, CLOCK_PIN=3, mode=HX711.CH_A_GAIN_128, callback=self.scale4_read_cb)
+
+        self.s1.start()
+        time.sleep(2)
+        self.s2.start()
+        time.sleep(2)
+        self.s3.start()
+        time.sleep(2)
+        self.s4.start()
+        time.sleep(2)
+        print("both start!!")
+
+    def scale1_read_cb(self, count, mode, reading):
+        if count!=self.last_count1:
+            self.scale_read1 = reading
+            self.last_count1 = count
+
+    def scale2_read_cb(self, count, mode, reading):
+        if count!=self.last_count2:
+            self.scale_read2 = reading
+            self.last_count2 = count
+        
+    def scale3_read_cb(self, count, mode, reading):
+        if count!=self.last_count3:
+            self.scale_read4 = reading
+            self.last_count4 = count
+
+    def scale4_read_cb(self, count, mode, reading):
+        if count!=self.last_count4:
+            self.scale_read4 = reading
+            self.last_count4 = count
 
 class HX711:
     CH_A_GAIN_64  = 0 # Channel A gain 64
@@ -63,6 +112,8 @@ class HX711:
         # callback function for processing the gpio reading  
         self._cb1 = pi.callback(DATA_PIN, pigpio.EITHER_EDGE, self._callback)
         self._cb2 = pi.callback(CLOCK_PIN, pigpio.FALLING_EDGE, self._callback)
+        self._cb3 = pi.callback(DATA_PIN, pigpio.EITHER_EDGE, self._callback)
+        self._cb4 = pi.callback(CLOCK_PIN, pigpio.FALLING_EDGE, self._callback)
 
         self.set_mode(mode) 
     # user interface of reading
@@ -139,6 +190,14 @@ class HX711:
             self._cb2.cancel()
             self._cb2 = None
 
+        if self._cb3 is not None:
+            self._cb3.cancel()
+            self._cb3 = None
+
+        if self._cb4 is not None:
+            self._cb4.cancel()
+            self._cb4 = None
+
         if self._wid is not None:
             self.pi.wave_delete(self._wid)
             self._wid = None
@@ -180,50 +239,19 @@ class HX711:
                 self._data_tick = tick
             except:
                 print("Over time for reading")
-            
 
-if __name__ == "__main__":
-    
-    class WeighingSystem(object):
-
-        def __init__(self, pi):
-            self.last_count1 = -1
-            self.last_count2 = -1
-            self.scale_read1 = 0
-            self.scale_read2 = 0
-            self.s1 = HX711(pi, DATA_PIN=5, CLOCK_PIN=6, mode=HX711.CH_A_GAIN_128, callback=self.scale1_read_cb)
-            self.s2 = HX711(pi, DATA_PIN=13, CLOCK_PIN=19, mode=HX711.CH_A_GAIN_128, callback=self.scale2_read_cb)
-
-            self.s1.start()
-            time.sleep(2)
-            self.s2.start()
-            time.sleep(2)
-            print("both start!!")
-
-        def scale1_read_cb(self, count, mode, reading):
-            if count!=self.last_count1:
-                self.scale_read1 = reading
-                self.last_count1 = count
-
-        def scale2_read_cb(self, count, mode, reading):
-            if count!=self.last_count2:
-                self.scale_read2 = reading
-                self.last_count2 = count
-
-    pi = pigpio.pi()
-    if not pi.connected:
-        exit(0)
-
+def getVals(): 
     weighing_system = WeighingSystem(pi)
-   
     try:
         print("start with CH_A_GAIN_128 and callback")
         
         start = time.time()
         while True:
-            # if time.time() - start > 60:
-            print("scale1:", weighing_system.scale_read1)
-            print("scale2:", weighing_system.scale_read2)
+            print("scale1: ", weighing_system.scale_read1, "scale2: ", weighing_system.scale_read2, "scale3: ", weighing_system.scale_read3, "scale4: ", weighing_system.scale_read4)
+            #print("scale1: ", weighing_system.scale_read1)
+            #print("scale2: ", weighing_system.scale_read2)
+            # print("scale3: ", weighing_system.scale_read3)
+            # print("scale4: ", weighing_system.scale_read4)
                 # start = time.time()
             time.sleep(0.1)
 
@@ -234,4 +262,32 @@ if __name__ == "__main__":
     weighing_system.s1.cancel()
     weighing_system.s2.pause()
     weighing_system.s2.cancel()
+    weighing_system.s3.pause()
+    weighing_system.s3.cancel()
+    weighing_system.s4.pause()
+    weighing_system.s4.cancel()
     pi.stop()
+
+def window():
+    app = QApplication([]) # create a window
+    window = QWidget()
+    
+    runButton = QPushButton(window) # run button
+    runButton.setText("Run")
+    runButton.move(50, 50)
+    # runButton.clicked.connect(getVals())
+
+    exitButton = QPushButton(window) # exit button
+    exitButton.setText("Exit")
+    exitButton.move(50, 100)
+    exitButton.clicked.connect(exit(0))
+
+    window.setGeometry(100, 100, 320, 200)
+    window.setWindowTitle("Golf balance window")
+    window.show() # show window
+    app.exec_()
+
+if __name__ == "__main__":
+    pi = pigpio.pi()
+
+    window()
