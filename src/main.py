@@ -187,12 +187,12 @@ class HX711: # amplifier class
             except:
                 print("Over time for reading")
 
-def cleanAndExit():
+def cleanAndExit(): # exit protocol
     print("Exiting")
 
     sys.exit()
 
-def window():
+def window(): # define window instance and buttons
     app = QApplication([]) # create a window
     window = QWidget()
     
@@ -210,6 +210,23 @@ def window():
     window.setWindowTitle("Golf balance window")
     window.show() # show window
     app.exec_()
+
+def animate(frame): # animate a graph
+    lines.set_data(x, y)
+
+def graph(res, xm, ym): # graphing function
+    # xm is the maximum x value to graph and ym is the max y value
+    # res is the list passed to the function containing the center of mass for each timestep
+    Figure = plt.figure()
+
+    # create a plot
+    lines = plt.plot([])
+
+    # limits
+    lines = lines[0]
+    plt.xlim(-xm, xm)
+    plt.ylim(-ym, ym)
+
 
 if __name__ == "__main__": # main function
     
@@ -239,37 +256,42 @@ if __name__ == "__main__": # main function
                 self.scale_read2 = reading
                 self.last_count2 = count
     def getVals():
-        s1 = []
-        s2 = []
-        pi = pigpio.pi()
+        s1 = [] # lists for saving
+
+        pi = pigpio.pi() # pi instance
         if not pi.connected:
             exit(0)
 
-        weighing_system = WeighingSystem(pi)
+        weighing_system = WeighingSystem(pi) # initializer
    
         try:
             print("start with CH_A_GAIN_128 and callback")
         
             start = time.time()
             op = 1
-            while op:
+            while op: # main loop
                 if time.time() - start > 10:
                     op = 0
                 else:
-                    scale1 = weighing_system.scale_read1
-                    s1.append(scale1)
+                    scale1 = weighing_system.scale_read1 # read each number
                     scale2 = weighing_system.scale_read2
-                    s2.append(scale2)
                     print("scale1: ", scale1, "scale2: ", scale2)
                     #print("scale1:", weighing_system.scale_read1)
                     #print("scale2:", weighing_system.scale_read2)
                     # start = time.time()
+                    
+                    s1.append()
                     time.sleep(0.1)
                    
             # print(s1)
         except Exception as e:
             print("error: ", e)
-        
+
+        # create a video
+        video = anim_created.to_html5_video()
+        html = display.HTML(video)
+        display.display(html)
+
         weighing_system.s1.pause()
         weighing_system.s1.cancel()
         weighing_system.s2.pause()

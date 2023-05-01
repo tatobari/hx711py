@@ -49,13 +49,13 @@ Instructions
 ------------
 The source code can be found in src/main.py
 
-For compiling and running through the command line, python3 is necessary.
+For compiling and running through the command line, python3 is necessary, therefore pip3 is required to install the following dependencies.
 
 Other dependencies include:
  - PyQt5 (included in python3 installation)
  - RPi.GPIO
  - Git
-
+ - pigpio
 
 Installation
 ------------
@@ -64,9 +64,21 @@ Installation
 ```
 python3 src/setup.py install
 ```
+If you are having an issue with permission,
+```
+sudo python3 src/setup.py install
+```
 
 Compilation
 -----------
+If running through the command line, you will need to first initiate the [pigpio](http://abyz.me.uk/rpi/pigpio/) daemon with the following command.
+
+```
+sudo pigpiod
+```
+
+Ensure you are running the program with python3 as python also comes installed on a raspberry pi, but will not work with our software. Therefore, pip3 will be used to install dependencies.
+
 ```
 python3 src/main.py
 ```
