@@ -47,7 +47,15 @@ For the past years I haven't been able to maintain this library because I had to
 
 Instructions
 ------------
-Check main.py to see how it works.
+The source code can be found in src/main.py
+
+For compiling and running through the command line, python3 is necessary.
+
+Other dependencies include:
+ - PyQt5 (included in python3 installation)
+ - RPi.GPIO
+ - Git
+
 
 Installation
 ------------
@@ -55,6 +63,12 @@ Installation
 2. In the repository directory, run
 ```
 python3 src/setup.py install
+```
+
+Compilation
+-----------
+```
+python3 src/main.py
 ```
 
 Using a 2-channel HX711 module
