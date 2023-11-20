@@ -62,14 +62,14 @@ while True:
             is_weight_above_600 = True
             # Insert API call here to turn on the light
             # Example: make_api_call(turn_on_light)
-            hue.turn_on_light(light_id)
+            hue.turn_on_light(group_id)
 
 
         elif val <= 600 and is_weight_above_600:
             is_weight_above_600 = False
             # Insert API call here to turn off the light
             # Example: make_api_call(turn_off_light)
-            hue.turn_off_light(light_id)
+            hue.turn_off_light(group_id)
 
         hx.power_down()
         hx.power_up()
