@@ -1,7 +1,9 @@
 import RPi.GPIO as GPIO
 
-def cleanup_gpio_pins():
-    GPIO.cleanup()
+# Use BCM GPIO numbering
+GPIO.setmode(GPIO.BCM)
 
-if __name__ == "__main__":
-    cleanup_gpio_pins()
+# Clean up all GPIO pins
+GPIO.cleanup()
+
+print("All GPIO pins have been cleaned up.")
