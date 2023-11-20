@@ -1,6 +1,7 @@
 import RPi.GPIO as GPIO
 
-# Your code to configure and use GPIO pins here
+def cleanup_gpio_pins():
+    GPIO.cleanup()
 
-# When you're done with GPIO pins, clean up
-GPIO.cleanup()
+if __name__ == "__main__":
+    cleanup_gpio_pins()
