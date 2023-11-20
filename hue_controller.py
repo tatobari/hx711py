@@ -11,11 +11,11 @@ class HueController:
         return response.json()
 
     def turn_on_light(self, group_id):
-        data = {"on": true}
+        data = {"on": True}
         return self.make_api_call(group_id, data)
 
     def turn_off_light(self, group_id):
-        data = {"on": false}
+        data = {"on": False}
         return self.make_api_call(group_id, data)
 
 # Usage
