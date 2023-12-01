@@ -37,7 +37,7 @@ hx = HX711(5, 6)
 
 hx.set_reading_format("MSB", "MSB")
 
-# hx.set_reference_unit(referenceUnit)
+hx.set_reference_unit(referenceUnit)
 
 hx.reset()
 
