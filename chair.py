@@ -55,7 +55,7 @@ while True:
         
 
         val = hx.get_weight(5)
-        print(val)
+        # print(val)
 
            # Check if the weight crosses the threshold and update the flag
         if val < -600 and not is_weight_above_600:
