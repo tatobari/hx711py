@@ -20,7 +20,7 @@ from hue_controller import HueController
 # Instantiate the HueController
 BRIDGE_IP = '192.168.1.46'
 USER_TOKEN = 'BplzC08YY96lJDa8IT8EjaW9KcvvU87Ubn68il7u'
-group_id = 9  # Replace with your specific light ID
+light_id = 47  # Replace with your specific light ID
 hue = HueController(BRIDGE_IP, USER_TOKEN)
 
 
@@ -58,18 +58,18 @@ while True:
         print(val)
 
            # Check if the weight crosses the threshold and update the flag
-        if val > 600 and not is_weight_above_600:
+        if val > -600 and not is_weight_above_600:
             is_weight_above_600 = True
             # Insert API call here to turn on the light
             # Example: make_api_call(turn_on_light)
-            hue.turn_on_light(group_id)
+            hue.turn_on_light(light_id)
 
 
-        elif val <= 600 and is_weight_above_600:
+        elif val <= -600 and is_weight_above_600:
             is_weight_above_600 = False
             # Insert API call here to turn off the light
             # Example: make_api_call(turn_off_light)
-            hue.turn_off_light(group_id)
+            hue.turn_off_light(light_id)
 
         hx.power_down()
         hx.power_up()
