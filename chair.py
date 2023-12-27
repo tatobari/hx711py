@@ -58,14 +58,14 @@ while True:
         print(val)
 
            # Check if the weight crosses the threshold and update the flag
-        if val > -600 and not is_weight_above_600:
+        if val < -600 and not is_weight_above_600:
             is_weight_above_600 = True
             # Insert API call here to turn on the light
             # Example: make_api_call(turn_on_light)
             hue.turn_on_light(light_id)
 
 
-        elif val <= -600 and is_weight_above_600:
+        elif val >= -600 and is_weight_above_600:
             is_weight_above_600 = False
             # Insert API call here to turn off the light
             # Example: make_api_call(turn_off_light)
