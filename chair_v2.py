@@ -61,7 +61,7 @@ is_weight_above_600 = False
 while True:
     try:
         val = hx.get_weight(5)
-        logging.info(f"Weight value read: {val}")
+        # logging.info(f"Weight value read: {val}")
 
         # Check if the weight crosses the threshold and update the flag
         if val < -600 and not is_weight_above_600:
@@ -76,10 +76,14 @@ while True:
 
         # hx.power_down()
         # hx.power_up()
-        time.sleep(0.1)
+        time.sleep(1)
 
     except (KeyboardInterrupt, SystemExit):
         cleanAndExit()
     except Exception as e:
         logging.error("An error occurred: " + str(e))
-        cleanAndExit()
+        hx.power_down()
+        time.sleep(1) # Delay for sensor stabilization
+        hx.power_up()
+        time.sleep(1) 
+        # cleanAndExit()
