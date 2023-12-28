@@ -74,8 +74,8 @@ while True:
             logging.info("Weight above -600, turning off light.")
             hue.turn_off_light(light_id)
 
-        hx.power_down()
-        hx.power_up()
+        # hx.power_down()
+        # hx.power_up()
         time.sleep(0.1)
 
     except (KeyboardInterrupt, SystemExit):
