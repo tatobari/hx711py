@@ -1,7 +1,8 @@
 import logging
 import time
-import hx711  # Assuming this is the library you're using for weight measurement
-import hue  # Assuming this is the library for controlling the lights
+import sys
+
+
 
 EMULATE_HX711=False
 referenceUnit = -441
