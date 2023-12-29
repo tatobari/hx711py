@@ -42,6 +42,9 @@ hx.reset()
 
 hx.tare()
 
+hue.turn_on_light(light_id)
+hue.turn_off_light(light_id)
+
 print("Tare done! Add weight now...")
 
 
