@@ -4,7 +4,7 @@ import sys
 
 # Instantiate logger
 from logging_handler import get_kafka_logger
-broker = '192.168.1.88:9092:9092'  # Replace with your Kafka broker address
+broker = '192.168.1.88:9092'  # Replace with your Kafka broker address
 device_name = "chair-sensor-1"
 topic = 'log-topic'
 logger = get_kafka_logger(broker, topic, device_name)
