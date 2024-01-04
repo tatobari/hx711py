@@ -1,10 +1,10 @@
-# import logging
+
 import time
 import sys
 
 # Instantiate logger
 from logging_handler import get_kafka_logger
-broker = '192.168.1.88:9092'  # Replace with your Kafka broker address
+broker = '192.168.1.88:9092'  
 device_name = "chair-sensor-1"
 topic = 'log-topic'
 logger = get_kafka_logger(broker, topic, device_name)
@@ -13,7 +13,7 @@ logger = get_kafka_logger(broker, topic, device_name)
 from hue_controller import HueController
 BRIDGE_IP = '192.168.1.46'
 USER_TOKEN = 'BplzC08YY96lJDa8IT8EjaW9KcvvU87Ubn68il7u'
-light_id = 47  # Replace with your specific light ID
+light_id = 47  
 hue = HueController(BRIDGE_IP, USER_TOKEN)
 
 EMULATE_HX711=False
@@ -26,11 +26,9 @@ else:
     from emulated_hx711 import HX711
 
 def cleanAndExit():
-    # print("Cleaning...")
     logger.info("Cleaning up and exiting.")
     if not EMULATE_HX711:
         GPIO.cleanup()
-    # print("Bye!")
     sys.exit()
 
 hx = HX711(6, 5)
@@ -42,14 +40,13 @@ hue.turn_on_light(light_id)
 hue.turn_off_light(light_id)
 
 logger.info("Tare done! Add weight now...")
-# producer.produce_message(topic, "Tare done! Add weight now...")
 
 is_weight_above_600 = False
 
 while True:
     try:
         val = hx.get_weight(5)
-        # logging.info(f"Weight value read: {val}")
+        # logger.info(f"Weight value read: {val}")
 
         # Check if the weight crosses the threshold and update the flag
         if val < -600 and not is_weight_above_600:
