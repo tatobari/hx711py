@@ -1,5 +1,10 @@
-from confluent_kafka import Producer
 import datetime
+import os
+from dotenv import load_dotenv
+from confluent_kafka import Producer
+
+load_dotenv()  # This loads the environment variables from .env
+
 
 class KafkaProducer:
     def __init__(self, broker_address, device_name):
@@ -14,14 +19,14 @@ class KafkaProducer:
 
     def produce_message(self, topic, message):
         current_time = datetime.datetime.now()
-        key = f"{self.device_name}_{current_time.strftime('%Y-%m-%d_%H:%M:%S')}"
+        key = f"{self.device_name}"
         self.producer.produce(topic, key=key, value=message, callback=self.delivery_report)
         self.producer.flush()
 
 # Usage
-# broker = 'your.kafka.broker.address:9092'  # Replace with your Kafka broker address
-# device_name = "Device1"
-# topic = 'test-topic'
+broker = os.getenv('BROKER')
+device_name = "Macbook-Pro"
+topic = 'test-topic'
 
-# producer = KafkaProducer(broker, device_name)
-# producer.produce_message(topic, 'Hello, Kafka!')
+producer = KafkaProducer(broker, device_name)
+producer.produce_message(topic, 'Nice, environment variable worked :)')

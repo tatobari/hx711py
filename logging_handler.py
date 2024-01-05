@@ -13,7 +13,7 @@ class KafkaLoggingHandler(logging.Handler):
         try:
             # Create a message key and value
             current_time = datetime.datetime.now()
-            key = f"{self.device_name}_{current_time.strftime('%Y-%m-%d_%H:%M:%S')}"
+            key = f"{self.device_name}"
             message = self.format(record)
 
             # Produce the message

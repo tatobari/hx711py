@@ -1,18 +1,21 @@
 
 import time
 import sys
+import os
+from dotenv import load_dotenv
+from confluent_kafka import Producer
 
 # Instantiate logger
 from logging_handler import get_kafka_logger
-broker = '192.168.1.88:9092'  
+BROKER = os.getenv('BROKER')
 device_name = "chair-sensor-1"
 topic = 'log-topic'
-logger = get_kafka_logger(broker, topic, device_name)
+logger = get_kafka_logger(BROKER, topic, device_name)
 
 # Instantiate the HueController
 from hue_controller import HueController
-BRIDGE_IP = '192.168.1.46'
-USER_TOKEN = 'BplzC08YY96lJDa8IT8EjaW9KcvvU87Ubn68il7u'
+BRIDGE_IP = os.getenv('BRIDGE_IP')
+USER_TOKEN = os.getenv('USER_TOKEN')
 light_id = 47  
 hue = HueController(BRIDGE_IP, USER_TOKEN)
 
