@@ -3,6 +3,7 @@ import time
 import sys
 import os
 from dotenv import load_dotenv
+load_dotenv()
 
 # Instantiate logger
 from logging_handler import get_kafka_logger
