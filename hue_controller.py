@@ -1,4 +1,7 @@
 import requests
+import os
+from dotenv import load_dotenv
+load_dotenv()
 
 class HueController:
     def __init__(self, bridge_ip, user_token):
@@ -23,15 +26,3 @@ class HueController:
         data = {"on": False}
         return self.make_api_call_to_light(light_id, data)
 
-# Usage
-BRIDGE_IP = '192.168.1.46'
-USER_TOKEN = 'BplzC08YY96lJDa8IT8EjaW9KcvvU87Ubn68il7u'
-group_id = 9  # Replace with your specific light ID
-
-hue = HueController(BRIDGE_IP, USER_TOKEN)
-
-# Turn on the light
-hue.turn_on_light(group_id)
-
-# Turn off the light
-hue.turn_off_light(group_id)
