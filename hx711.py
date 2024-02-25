@@ -4,8 +4,6 @@ import RPi.GPIO as GPIO
 import time
 import threading
 
-
-
 class HX711:
 
     def __init__(self, dout, pd_sck, gain=128):
@@ -39,10 +37,15 @@ class HX711:
 
         self.set_gain(gain)
 
+
         # Think about whether this is necessary.
         time.sleep(1)
 
         
+        # Think about whether this is necessary.
+        time.sleep(1)
+
+
     def convertFromTwosComplement24bit(self, inputValue):
         return -(inputValue & 0x800000) + (inputValue & 0x7fffff)
 
@@ -255,8 +258,8 @@ class HX711:
         value = self.get_value_B(times)
         value = value / self.REFERENCE_UNIT_B
         return value
-
     
+
     # Sets tare for channel A for compatibility purposes
     def tare(self, times=15):
         return self.tare_A(times)
@@ -303,7 +306,6 @@ class HX711:
         return value
 
 
-    
     def set_reading_format(self, byte_format="LSB", bit_format="MSB"):
         if byte_format == "LSB":
             self.byte_format = byte_format
@@ -320,8 +322,6 @@ class HX711:
             raise ValueError("Unrecognised bitformat: \"%s\"" % bit_format)
 
             
-
-
     # sets offset for channel A for compatibility reasons
     def set_offset(self, offset):
         self.set_offset_A(offset)
@@ -378,12 +378,12 @@ class HX711:
         
         
     def power_down(self):
-        # Wait for and get the Read Lock, incase another thread is already
+        # Wait for and get the Read Lock, in case another thread is already
         # driving the HX711 serial interface.
         self.readLock.acquire()
 
-        # Cause a rising edge on HX711 Digital Serial Clock (PD_SCK).  We then
-        # leave it held up and wait 100 us.  After 60us the HX711 should be
+        # Because a rising edge on HX711 Digital Serial Clock (PD_SCK).  We then
+        # leave it held up and wait 100us.  After 60us the HX711 should be
         # powered down.
         GPIO.output(self.PD_SCK, False)
         GPIO.output(self.PD_SCK, True)
@@ -422,5 +422,8 @@ class HX711:
         self.power_down()
         self.power_up()
 
+def hx711_add_event_detect(hx711_instance, event_callback):
+        GPIO.add_event_detect(self.DOUT, GPIO.FALLING, 
+            callback=event_callback)
 
 # EOF - hx711.py
