@@ -44,6 +44,11 @@ class HX711Pi:
         
         # Think about whether this is necessary.
         time.sleep(1)
+        
+        self.readyCallbackEnabled = False
+        self.lastRawBytes = None
+        
+        
 
 
     def convertFromTwosComplement24bit(self, inputValue):
@@ -239,6 +244,25 @@ class HX711Pi:
             self.setChannel(currentChannel)
         
         return rawBytes
+
+
+    def getLastRawBytes(self):
+        rawBytes = self.lastRawBytes
+        self.lastRawBytes = None
+        return rawBytes
+
+
+    def readyCallback(self, pin):
+        self.lastRawBytes = self.readRawBytes(blockUntilReady=False)
+
+    
+    def enableReadyCallback(self, callback):
+        GPIO.add_event_detect(self.DOUT, GPIO.FALLING, callback=callback)
+        self.readyCallbackEnabled = True
+
+    
+    def disableReadyCallback(self):
+        GPIO.remove_event_detect(self.DOUT)
 
 
     def setReadingFormat(self, byteFormat="LSB", bitFormat="MSB"):

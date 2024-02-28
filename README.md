@@ -32,7 +32,7 @@ To install:
 python setup.py install
 ```
 
-## Usage with two channels
+## About using the two channels of one breakout board
 
 This is a completely unnecessary feature that I, for some reason, decided to include in the original code. Anyway, in theory, it allows using to loadcells at the same time but they'd have different gains so they would provide different values but would both provide weights, just with different accuracy.
 
