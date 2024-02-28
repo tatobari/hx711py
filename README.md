@@ -6,6 +6,17 @@ I've only made a few modifications on the way the captured bits are processed an
 
 I'm currently trying to improve this version.
 
+## Warning: Possible random values
+
+>  **Possible random values!**
+>  Pulling the bits from the HX711 is a time sensitive process as explained its the datasheet. Raspberry runs on Linux which is not a good tool for time sensitive operations using the GPIO pins because tasks are prioritized by the Operative System which might delay a GPIO operation. It could also happen than pulling up and down the pin happens too fast for the HX711.
+>
+>  If there is a right way to precisely pull the bits with a Raspberry Pi following the datasheet's timing specifications, which is in microseconds, which is a millionth of a second, then this code is probably not doing it in that right way and might return random values if other processes are running simultanously, delaying the GPIO operations, or if the processor is not busy with anything else at all, allowing the GPIO operations to happen too fast.
+>
+>  I know very little about the OS architecture, but it seems to me that this too scenarios could happen. I'm not event a developer as you can see by how ugly the code and my commits are, haha.
+>
+>  I recommends using an Arduino instead of a Raspberry Pi. Hope this library helps, though.
+
 ## Table of contents
 
 1. [Files description](#files-description)
@@ -16,9 +27,9 @@ I'm currently trying to improve this version.
 ## Files description
 
 File descriptions:
-- `hx711.py`: v0.1 code. Readings are not near as frequent as they could be. Currently, it's barely doing 1 reading per second when the HX711 allows for 10SPS (Samples Per Second), which translates two 10 readings per second.
-- `example.py`: Example of how to use `hx711.py`. The exaplanation is not really good.
-- `hx711_emulator.py`: This is a class that emulates the behaviour of my original HX711 class. It's actually more of a simulator.
+- `hx711.py`: v0.1 code. Readings are not near as frequent as they could be. Currently, it's barely doing 1 reading per second when the HX711 allows for 10SPS (Samples Per Second), which translates to 10 readings per second.
+- `example.py`: Example of how to use `hx711.py`. The exaplanation is not good at all.
+- `hx711_emulator.py`: This is a class that emulates the behaviour of my original HX711 class. It's actually more a simulator than an emulator.
 - `example_emulator.py`: Show an example but using the emulator class.
 - `hx711pi.py`: This a new version I've just created, untested at the moment, with the objective of allowing 10 readings per second. They will be provided by some sort of event I still need to figure out how to create and how to throttle somehow.
 
@@ -46,6 +57,12 @@ This info was obtained from an HX711 datasheet located at:
 https://cdn.sparkfun.com/datasheets/Sensors/ForceFlex/hx711_english.pdf
 
 ## Changelog
+
+### 28/02/2023
+
+I'm only using my lunch time to commit changes in order to close all the HX711 environment on my mac because I need more processing power.
+
+This version adds new methods to allow the use of interrupts as an alternative to polling.
 
 ### 25/02/2023
 
