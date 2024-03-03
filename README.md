@@ -65,7 +65,7 @@ https://cdn.sparkfun.com/datasheets/Sensors/ForceFlex/hx711_english.pdf
 
 - Changed the filename of the new version to make a bit more sense (Sorry for not making a new branch for the new verison.).
 - Added example file for v0.5.1.
-- Tested v0.5.1 and working.
+- **Tested v0.5.1 and working.**
 
 ### 28/02/2023
 

@@ -3,6 +3,10 @@ import sys
 import RPi.GPIO as GPIO
 from hx711v0_5_1 import HX711
 
+# If True, sets the class to use the "GPIO.add_event_detect" to know when to pull and execute the passed callback.
+# If False, sets the example pulls a new value from the HX711 using the readRawBytes() method, which will wait until the HX711 is ready.
+USE_CALLBACK = False
+
 hx = HX711(5, 6)
 
 def printRawBytes(rawBytes):
@@ -18,6 +22,13 @@ def printWeight(rawBytes):
     print(f"[WEIGHT] {hx.rawBytesToWeight(rawBytes)} gr")
 
 def printAll(rawBytes):
+    longValue = hx.rawBytesToLong(rawBytes)
+    longWithOffsetValue = hx.rawBytesToLongWithOffset(rawBytes)
+    weightValue = hx.rawBytesToWeight(rawBytes)
+    print(f"[INFO] longValue: {longValue} | longWithOffsetValue: {longWithOffsetValue} | weight (grams): {weightValue}")
+
+def printGetRawBytesAndPrintAll():
+    rawBytes = hx.getRawBytes()
     longValue = hx.rawBytesToLong(rawBytes)
     longWithOffsetValue = hx.rawBytesToLongWithOffset(rawBytes)
     weightValue = hx.rawBytesToWeight(rawBytes)
@@ -58,14 +69,17 @@ print(f"[INFO] Setting the 'referenceUnit' at {referenceUnit}.")
 hx.setReferenceUnit(referenceUnit)
 print(f"[INFO] Finished setting the 'referenceUnit' at {referenceUnit}.")
 
-print("[INFO] Enabling the callback.")
-hx.enableReadyCallback(printAll)
-print("[INFO] Finished enabling the callback.")
+if USE_CALLBACK is True:
+    print("[INFO] Enabling the callback.")
+    # hx.enableReadyCallback(printAll)
+    print("[INFO] Finished enabling the callback.")
 
 
 while True:
     try:
-        x = 1
+        if USE_CALLBACK is False:
+            printGetRawBytesAndPrintAll()
+            
     except (KeyboardInterrupt, SystemExit):
         GPIO.cleanup()
         print("[INFO] 'KeyboardInterrupt Exception' detected. Cleaning and exiting...")
