@@ -1,10 +1,8 @@
-#
-
 import RPi.GPIO as GPIO
 import time
 import threading
 
-class HX711Pi:
+class HX711:
 
     def __init__(self, dout, pd_sck, gain=128):
         self.PD_SCK = pd_sck
@@ -28,8 +26,6 @@ class HX711Pi:
         self.OFFSET_B = 1
         self.lastVal = int(0)
 
-        self.DEBUG_PRINTING = False
-
         self.byteFormat = 'MSB'
         self.bitFormat = 'MSB'
         
@@ -46,13 +42,9 @@ class HX711Pi:
         time.sleep(1)
         
         self.readyCallbackEnabled = False
+        self.paramCallback = None
         self.lastRawBytes = None
-        
-        
 
-
-    def convertFromTwosComplement24bit(self, inputValue):
-        return -(inputValue & 0x800000) + (inputValue & 0x7fffff)
 
     def powerDown(self):
         # Wait for and get the Read Lock, in case another thread is already
@@ -106,16 +98,16 @@ class HX711Pi:
 
     def setGain(self, gain):
         
-        self.reset()
-        
-        if gain is 128:
+        if gain == 128:
             self.GAIN = 1
-        elif gain is 64:
+        elif gain == 64:
             self.GAIN = 3
-        elif gain is 32:
+        elif gain == 32:
             self.GAIN = 2
         else:
             return False
+        
+        self.reset()
 
         GPIO.output(self.PD_SCK, False)
 
@@ -229,7 +221,7 @@ class HX711Pi:
     def getRawBytes(self, channel='A'):
         
         # Get current channel
-        currentChannel = self.getChannel(channel)
+        currentChannel = self.getChannel()
         
         # Compare the requested channel with the current channel
         if channel != currentChannel:
@@ -253,16 +245,25 @@ class HX711Pi:
 
 
     def readyCallback(self, pin):
+        # Check if the callback is for the DOUT pin.
+        if(pin != self.DOUT):
+            return
+        
         self.lastRawBytes = self.readRawBytes(blockUntilReady=False)
+        if self.paramCallback is not None:
+            self.paramCallback(self.lastRawBytes)
 
     
-    def enableReadyCallback(self, callback):
-        GPIO.add_event_detect(self.DOUT, GPIO.FALLING, callback=callback)
+    def enableReadyCallback(self, paramCallback=None):
+        self.paramCallback = paramCallback if paramCallback is not None else self.paramCallback
+        GPIO.add_event_detect(self.DOUT, GPIO.FALLING, callback=self.readyCallback)
         self.readyCallbackEnabled = True
 
     
     def disableReadyCallback(self):
         GPIO.remove_event_detect(self.DOUT)
+        self.paramCallback = None
+        self.readyCallbackEnabled = False
 
 
     def setReadingFormat(self, byteFormat="LSB", bitFormat="MSB"):
@@ -280,16 +281,17 @@ class HX711Pi:
         else:
             raise ValueError("Unrecognised bitformat: \"%s\"" % bitFormat)
 
+    
+    def convertFromTwosComplement24bit(self, inputValue):
+        return -(inputValue & 0x800000) + (inputValue & 0x7fffff)
 
+    
     def rawBytesToLong(self, rawBytes):
 
         # Join the raw bytes into a single 24bit 2s complement value.
         twosComplementValue = ((rawBytes[0] << 16) |
                                (rawBytes[1] << 8)  |
                                rawBytes[2])
-
-        if self.DEBUG_PRINTING:
-            print("Twos: 0x%06x" % twosComplementValue)
         
         # Convert from 24bit twos-complement to a signed value.
         signed_int_value = self.convertFromTwosComplement24bit(twosComplementValue)
@@ -303,7 +305,7 @@ class HX711Pi:
 
     def getLong(self, channel='A'):
                 
-        currentChannel = self.getChannel(channel)
+        currentChannel = self.getChannel()
         if channel != currentChannel:
             self.setChannel(channel)
         
@@ -316,7 +318,7 @@ class HX711Pi:
         if rawBytes is None:
             return None
         
-        return self.rawBytesTolong(rawBytes)
+        return self.rawBytesToLong(rawBytes)
 
 
     def setOffset(self, offset, channel='A'):
@@ -363,7 +365,7 @@ class HX711Pi:
 
     def getLongWithOffset(self, channel='A'):
         
-        currentChannel = self.getChannel(channel)
+        currentChannel = self.getChannel()
         if channel != currentChannel:
             self.setChannel(channel)
         
@@ -417,7 +419,7 @@ class HX711Pi:
     
     def getWeight(self, channel='A'):
         
-        currentChannel = self.getChannel(channel)
+        currentChannel = self.getChannel()
         if channel != currentChannel:
             self.setChannel(channel)
         
@@ -438,14 +440,11 @@ class HX711Pi:
         
         self.setReferenceUnit(1, channel)
         
-        currentChannel = self.getChannel(channel)
+        currentChannel = self.getChannel()
         if channel != currentChannel:
             self.setChannel(channel)
             
-        newOffsetValue = self.readLong(channel)
-        
-        if self.DEBUG_PRINTING:
-            print("Tare value:", tareValue)
+        newOffsetValue = self.getLong(channel)
         
         self.setOffset(newOffsetValue, channel)
         
@@ -456,4 +455,4 @@ class HX711Pi:
         
         return True
     
-# EOF - hx711py.py
+# EOF - hx711.py

@@ -1,5 +1,3 @@
-#
-
 import RPi.GPIO as GPIO
 import time
 import threading
@@ -55,11 +53,11 @@ class HX711:
 
     
     def set_gain(self, gain):
-        if gain is 128:
+        if gain == 128:
             self.GAIN = 1
-        elif gain is 64:
+        elif gain == 64:
             self.GAIN = 3
-        elif gain is 32:
+        elif gain == 32:
             self.GAIN = 2
 
         GPIO.output(self.PD_SCK, False)

@@ -4,18 +4,20 @@ This code credited to [underdoeg](https://github.com/underdoeg/)'s [Gist HX711.p
 
 I've only made a few modifications on the way the captured bits are processed and to support Two's Complement, which it didn't.
 
-I'm currently trying to improve this version.
+I'm currently trying to improve this version. It's actually working, I'd use `hx711v_0_5_1.py`.
 
 ## Warning: Possible random values
 
 >  **Possible random values!**
->  Pulling the bits from the HX711 is a time sensitive process as explained its the datasheet. Raspberry runs on Linux which is not a good tool for time sensitive operations using the GPIO pins because tasks are prioritized by the Operative System which might delay a GPIO operation. It could also happen than pulling up and down the pin happens too fast for the HX711.
+>  Pulling the bits from the HX711 is a time sensitive process as explained in the HX711 the datasheet. Raspberry runs on Linux which is not a good tool for time sensitive operations using the GPIO pins because tasks are prioritized by the Operative System which might delay a GPIO operation. It could also happen that the commands that pull the pins up and down run too fast for the HX711.
 >
->  If there is a right way to precisely pull the bits with a Raspberry Pi following the datasheet's timing specifications, which is in microseconds, which is a millionth of a second, then this code is probably not doing it in that right way and might return random values if other processes are running simultanously, delaying the GPIO operations, or if the processor is not busy with anything else at all, allowing the GPIO operations to happen too fast.
+>  If there is a right way to precisely pull the bits with a Raspberry Pi (i.e. Linux OS) following the datasheet's timing specifications, which is in microseconds, which is a millionth of a second, then this code is probably not doing it in that right way and might return random values if other processes are running simultanously, delaying the GPIO operations, or if the processor is not busy with anything else at all, allowing the GPIO operations to happen too fast.
 >
 >  I know very little about the OS architecture, but it seems to me that this too scenarios could happen. I'm not event a developer as you can see by how ugly the code and my commits are, haha.
 >
->  I recommends using an Arduino instead of a Raspberry Pi. Hope this library helps, though.
+>  I'm thinking that that a better idea would be to wire the HX711 to an MCU and the MCU to the Raspberry Pi. The MCU could pull a pin to trigger an event on the Raspberry Pi so that the Pi could retrieve the data from the MCU using 1-Wire or I2C, probably. Maybe a feature for the future.
+>
+>  So, at the risk of repeating myself, I do recommend using an Arduino instead of a Raspberry Pi and if you really need an Arduino involved, then have the Arduino send the information to the Raspberry Pi vía I2C. Hope this library helps, though.
 
 ## Table of contents
 
@@ -31,7 +33,8 @@ File descriptions:
 - `example.py`: Example of how to use `hx711.py`. The exaplanation is not good at all.
 - `hx711_emulator.py`: This is a class that emulates the behaviour of my original HX711 class. It's actually more a simulator than an emulator.
 - `example_emulator.py`: Show an example but using the emulator class.
-- `hx711pi.py`: This a new version I've just created, untested at the moment, with the objective of allowing 10 readings per second. They will be provided by some sort of event I still need to figure out how to create and how to throttle somehow.
+- `hx711v0_5_1.py`: This a new version I've just created, _**tested and working pretty well**_, with the objective of allowing 10 readings per second. They will be provided by some sort of event I still need to figure out how to create and how to throttle somehow.
+- `example_hx711v0_5_1.py`: 
 
 ## Instructions
 
@@ -57,6 +60,12 @@ This info was obtained from an HX711 datasheet located at:
 https://cdn.sparkfun.com/datasheets/Sensors/ForceFlex/hx711_english.pdf
 
 ## Changelog
+
+### 03/03/2023
+
+- Changed the filename of the new version to make a bit more sense (Sorry for not making a new branch for the new verison.).
+- Added example file for v0.5.1.
+- Tested v0.5.1 and working.
 
 ### 28/02/2023
 

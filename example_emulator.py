@@ -1,5 +1,3 @@
-#! /usr/bin/python2
-
 import time
 import sys
 from emulated_hx711 import HX711
