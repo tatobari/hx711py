@@ -44,7 +44,7 @@ No "setup.py" required if you're on Raspbian OS. I'm actually using the Lite Ver
 
 #### Interrupt based
 
-```
+```bash
 clone git@github.com:tatobari/hx711py.git
 python example_hx711v0_5_1.py
 ```
@@ -53,7 +53,7 @@ python example_hx711v0_5_1.py
 
 #### Polling based
 
-```
+```bash
 clone git@github.com:tatobari/hx711py.git
 python example_hx711v0_5_1.py --polling-based
 ```
@@ -63,14 +63,11 @@ python example_hx711v0_5_1.py --polling-based
 ### Legacy Version
 To install the old version (hx711.py):
 
-```
+```bash
 clone git@github.com:tatobari/hx711py.git
 python setup.py install
 python example.py
 ```
-
-
-
 
 
 ## About using the two channels of one breakout board
