@@ -34,11 +34,6 @@ class HX711:
         self.bit_format = 'MSB'
 
         self.set_gain(gain)
-
-
-        # Think about whether this is necessary.
-        time.sleep(1)
-
         
         # Think about whether this is necessary.
         time.sleep(1)
@@ -108,7 +103,7 @@ class HX711:
         
 
     def readRawBytes(self):
-        # Wait for and get the Read Lock, incase another thread is already
+        # Wait for and get the Read Lock, in case another thread is already
         # driving the HX711 serial interface.
         self.readLock.acquire()
 
@@ -131,7 +126,7 @@ class HX711:
         # serial interface.
         self.readLock.release()           
 
-        # Depending on how we're configured, return an orderd list of raw byte
+        # Depending on how we're configured, return an ordered list of raw byte
         # values.
         if self.byte_format == 'LSB':
            return [thirdByte, secondByte, firstByte]

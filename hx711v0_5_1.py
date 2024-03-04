@@ -26,8 +26,8 @@ class HX711:
         self.OFFSET_B = 1
         self.lastVal = int(0)
 
-        self.byteFormat = 'MSB'
-        self.bitFormat = 'MSB'
+        self.byteFormat = 'MSB' # 'MSB' or 'LSB'
+        self.bitFormat = 'MSB' # 'MSB' or 'LSB'
         
         # GAIN must be between 1 and 3. None is an invalid value.
         self.GAIN = None
@@ -93,7 +93,7 @@ class HX711:
 
 
     def isReady(self):
-        return GPIO.input(self.DOUT) == 0
+        return GPIO.input(self.DOUT) == GPIO.LOW
 
 
     def setGain(self, gain):
@@ -168,12 +168,14 @@ class HX711:
        # Read bits and build the byte from top, or bottom, depending
        # on whether we are in MSB or LSB bit mode.
        for x in range(8):
-          if self.bitFormat == 'MSB':
-             byteValue <<= 1
-             byteValue |= self.readNextBit()
-          else:
-             byteValue >>= 1              
-             byteValue |= self.readNextBit() * 0x80
+            if self.bitFormat == 'MSB':
+                # Most significant Byte first.
+                byteValue <<= 1
+                byteValue |= self.readNextBit()
+            else:
+                # Less significant Byte first.
+                byteValue >>= 1              
+                byteValue |= self.readNextBit() * 0x80
 
        # Return the packed byte.
        return byteValue 
@@ -193,7 +195,7 @@ class HX711:
             return None
 
         # Wait until HX711 is ready for us to read a sample.
-        while not self.isReady():
+        while self.isReady() is not True:
            pass
 
         # Read three bytes of data from the HX711.
@@ -211,12 +213,13 @@ class HX711:
         # serial interface.
         self.readLock.release()           
 
-        # Depending on how we're configured, return an orderd list of raw byte
-        # values.
-        if self.byteFormat == 'LSB':
-           return [thirdByte, secondByte, firstByte]
+        # Depending on how we're configured, return an orderd list of raw byte values.
+        if self.byteFormat == 'MSB':
+            # Most significant Byte first.
+            return [firstByte, secondByte, thirdByte]
         else:
-           return [firstByte, secondByte, thirdByte]
+            # Less Significant Byte first.
+            return [thirdByte, secondByte, firstByte]
 
     def getRawBytes(self, channel='A'):
         
@@ -266,27 +269,26 @@ class HX711:
         self.readyCallbackEnabled = False
 
 
-    def setReadingFormat(self, byteFormat="LSB", bitFormat="MSB"):
-        if byteFormat == "LSB":
-            self.byteFormat = byteFormat
-        elif byteFormat == "MSB":
-            self.byteFormat = byteFormat
-        else:
-            raise ValueError("Unrecognised byteFormat: \"%s\"" % byteFormat)
-
-        if bitFormat == "LSB":
-            self.bitFormat = bitFormat
-        elif bitFormat == "MSB":
-            self.bitFormat = bitFormat
-        else:
-            raise ValueError("Unrecognised bitformat: \"%s\"" % bitFormat)
+    def setReadingFormat(self, byteFormat="MSB", bitFormat="MSB"):
+        
+        if byteFormat != 'MSB' and byteFormat != 'LSB':
+            raise ValueError(f"HX711::setReadingFormat() invalid byteFormat: '{byteFormat}'" )
+        
+        if bitFormat != 'MSB' and bitFormat != 'LSB':
+            raise ValueError(f"HX711::setReadingFormat() invalid bitFormat: '{byteFormat}'" )
+        
+        self.byteFormat = byteFormat
+        self.bitFormat = bitFormat
 
     
     def convertFromTwosComplement24bit(self, inputValue):
         return -(inputValue & 0x800000) + (inputValue & 0x7fffff)
 
     
-    def rawBytesToLong(self, rawBytes):
+    def rawBytesToLong(self, rawBytes=None):
+        
+        if rawBytes is None:
+            return None
 
         # Join the raw bytes into a single 24bit 2s complement value.
         twosComplementValue = ((rawBytes[0] << 16) |
@@ -357,7 +359,11 @@ class HX711:
         return self.getOffset('B')
     
     
-    def rawBytesToLongWithOffset(self, rawBytes, channel='A'):
+    def rawBytesToLongWithOffset(self, rawBytes=None, channel='A'):
+        
+        if rawBytes is None:
+            return None
+        
         longValue = self.rawBytesToLong(rawBytes)
         offset = self.getOffset(channel)
         return longValue - offset
@@ -400,7 +406,10 @@ class HX711:
         raise ValueError("HX711::getReferenceUnit() invalid channel: \"%s\"" % channel)
 
     
-    def rawBytesToWeight(self, rawBytes, channel='A'):
+    def rawBytesToWeight(self, rawBytes=None, channel='A'):
+        
+        if rawBytes is None:
+            return None
         
         longWithOffset = self.rawBytesToLongWithOffset(rawBytes, channel)
         
