@@ -27,7 +27,6 @@ weight_sensor.tare()
 logging.info(f"Tare done! Weight measurement should be accurate now...")
 
 def get_current_weight(num_of_reads=5):
-
     # Get weight
     curr_weight = weight_sensor.get_weight(times=num_of_reads) # Gets 5 reads by default
     logging.info(f"Weight Reading: {curr_weight}")
@@ -37,5 +36,4 @@ def get_current_weight(num_of_reads=5):
     weight_sensor.power_up()
     time.sleep(0.1)
     return curr_weight
-
 
