@@ -7,5 +7,5 @@ app = FastAPI()
 
 @app.get("/")
 def get_root():
-    return {"Hello": "World"}
+    return "Welcome to Sortwise Weight Sensor go to /docs for endpoints" 
 
