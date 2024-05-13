@@ -69,10 +69,9 @@ python setup.py install
 python example.py
 ```
 
+## About using the two channels of one breakout board
 
-## About using the two channels of one breakout board
-
-This is a completely unnecessary feature that I, for some reason, decided to include in the original code. Anyway, in theory, it allows using to loadcells at the same time but they'd have different gains so they would provide different values but would both provide weights, just with different accuracy.
+This is a completely unnecessary feature that I, for some reason, decided to include in the original code. Anyway, in theory, it allows using two loadcells at the same time but they would have different two gains. So, though they would provide different raw values, both provide weights, just with different accuracy.
 
 I haven't tested the use of two loadcells on the same breakout board at the same time. It might not work.
 
