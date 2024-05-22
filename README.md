@@ -1,6 +1,6 @@
 # HX711 for Raspbery Pi
 
-This code credited to [underdoeg](https://github.com/underdoeg/)'s [Gist HX711.py](https://gist.github.com/underdoeg/98a38b54f889fce2b237).
+This code is credited to [underdoeg](https://github.com/underdoeg/)'s gist [ HX711.py](https://gist.github.com/underdoeg/98a38b54f889fce2b237).
 
 I've only made a few modifications on the way the captured bits are processed and to support Two's Complement, which it didn't.
 
@@ -9,15 +9,15 @@ I'm currently trying to improve this version. It's actually working, I'd use `hx
 ## Warning: Possible random values
 
 >  **Possible random values!**
->  Polling the bits from the HX711 is a time sensitive process as explained in the HX711 the datasheet. Raspberry runs on Linux which is not a good tool for time sensitive operations using the GPIO pins because tasks are prioritized by the Operative System which might delay a GPIO operation. It could also happen that the commands that poll the pins up and down run too fast for the HX711.
+>  Polling the bits from the HX711 is a time sensitive process as explained in the HX711 the datasheet. Raspberry runs on Linux which is not a good tool for time sensitive operations using the GPIO pins because tasks are prioritized by the Operative System which might delay a GPIO operation, causing the library to fail to poll the bits following the specified timing in the datasheet. It could also happen that the commands that poll the pins up and down run too fast for the HX711.
 >
 >  If there is a right way to precisely poll the bits with a Raspberry Pi (i.e. Linux OS) following the datasheet's timing specifications, which is in microseconds, which is a millionth of a second, then this code is probably not doing it in that right way and might return random values if other processes are running simultanously, delaying the GPIO operations, or if the processor is not busy with anything else at all, allowing the GPIO operations to happen too fast.
 >
->  I know very little about the OS architecture, but it seems to me that this too scenarios could happen. I'm not event a developer as you can see by how ugly the code and my commits are, haha.
+>  I know very little about OS architecture, but it seems to me that this two scenarios could happen. I'm not event a developer as you can see by how ugly the code and my commits are, so I'd think twice before trusting this code, haha.
 >
->  I'm thinking that that a better idea would be to wire the HX711 to an MCU and the MCU to the Raspberry Pi. The MCU could poll a pin to trigger an event on the Raspberry Pi so that the Pi could retrieve the data from the MCU using 1-Wire or I2C, probably. Maybe a feature for the future.
+>  I'm think that a better idea is to wire the HX711 to an MCU and the MCU to the Raspberry Pi. The MCU could poll a pin to trigger an event on the Raspberry Pi so that the Pi could retrieve the data from the MCU using 1-Wire or I2C, probably. Maybe a feature for the future.
 >
->  So, at the risk of repeating myself, I do recommend using an Arduino instead of a Raspberry Pi and if you really need an Arduino involved, then have the Arduino send the information to the Raspberry Pi vía I2C. Hope this library helps, though.
+>  So, at the risk of repeating myself, I do recommend using an Arduino or any MCU instead of a Raspberry Pi to poll bits from the HX711. and if you really need an Raspberry involved, then have the Arduino send the information to the Raspberry Pi vía I2C or 1-Wire. Hope this library helps, though.
 
 ## Table of contents
 
