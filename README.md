@@ -4,7 +4,24 @@ This code is credited to [underdoeg](https://github.com/underdoeg/)'s gist [ HX7
 
 I've only made a few modifications on the way the captured bits are processed and to support Two's Complement, which it didn't.
 
-I'm currently trying to improve this version. It's actually working, I'd use `hx711v_0_5_1.py`.
+I'm currently trying to improve this version. It's actually working, I'd use `hx711v_0_5_1.py`. In order to weigh any objects with these scripts you will need to calculate your reference unit using an object of known wight.
+
+Either run `calibration.py` or caculate your refrence unit manually using:
+
+1. Set the reference unit to 1 and make sure the offset value is set.
+2. Load you sensor with 1kg or with anything you know exactly how much it weights.
+3. Write down the 'long' value you're getting. Make sure you're getting somewhat consistent values.
+    - This values might be in the order of millions, varying by hundreds or thousands and it's ok.
+4. To get the wright in grams, calculate the reference unit using the following formula:
+        
+    referenceUnit = longValueWithOffset / 1000
+
+    hx.rawBytesToLongWithOffset(rawBytes)}
+        
+In my case, the longValueWithOffset was around 114000 so my reference unit is 114,
+because if I used the 114000, I'd be getting milligrams instead of grams.
+
+Set your reference unit in the script script by updating the line with `hx.set_reference_unit({REFERENCE_UNIT})` with your value.
 
 ## Warning: Possible random values
 
