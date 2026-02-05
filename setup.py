@@ -4,7 +4,6 @@ setup(
     name='hx711',
     version='0.1.0',
     description='HX711 Python Library for Raspberry Pi',
-    py_modules=['hx711'],
+    py_modules=['hx711', 'hx711_emulator'],
     install_requires=['Rpi.GPIO'],
 )
-
