@@ -214,10 +214,10 @@ class HX711:
        if (times & 0x1) == 0x1:
           return valueList[len(valueList) // 2]
        else:
-          # If times is even we have to take the arithmetic mean of
-          # the two middle values.
-          midpoint = len(valueList) / 2
-          return sum(valueList[midpoint:midpoint+2]) / 2.0
+           # If times is even we have to take the arithmetic mean of
+           # the two middle values.
+           midpoint = len(valueList) // 2
+           return sum(valueList[midpoint:midpoint+2]) / 2.0
 
 
     # Compatibility function, uses channel A version
