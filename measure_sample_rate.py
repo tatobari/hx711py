@@ -1,51 +1,76 @@
 #! /usr/bin/python3
 
+import time
+
 from hx711 import HX711
 
-import sys
-import time
+
+RUN_SECONDS = 60.0
+SAMPLES_PER_BATCH = 100
+
+
+def print_summary(batch_count, total_rate, min_rate, max_rate, drop_count):
+    print()
+
+    if batch_count == 0:
+        print("No samples collected.")
+        return
+
+    mean_rate = total_rate / batch_count
+    print(
+        "Overall: Mean {:.2f} Hz, Min {:.2f} Hz, Max {:.2f} Hz, Dropped {}".format(
+            mean_rate, min_rate, max_rate, drop_count
+        )
+    )
 
 
 hx = HX711(5, 6)
 
+hx.set_channel_gain(hx.CH_A_GAIN_128)
 hx.reset()
 
-deadline = time.time() + 60.0
+deadline = time.time() + RUN_SECONDS
 
-sample_rate_list = []
-sample_count = 100
-
+batch_count = 0
+total_rate = 0.0
+min_rate = float("inf")
+max_rate = float("-inf")
 drop_count = 0
 
-while time.time() < deadline:
-    start_time = time.time()
-    sample_count = 0
+try:
+    while time.time() < deadline:
+        start_time = time.time()
+        samples_read = 0
 
-    for _ in range(100):
-        if hx.read_word() is not None:
-            sample_count += 1
-        else:
-            drop_count += 1
+        for _ in range(SAMPLES_PER_BATCH):
+            if hx.read_word() is not None:
+                samples_read += 1
+            else:
+                drop_count += 1
 
-    end_time = time.time()
+        time_delta = time.time() - start_time
+        sample_rate = samples_read / time_delta if time_delta > 0 else 0.0
 
-    time_delta = end_time - start_time
+        batch_count += 1
+        total_rate += sample_rate
+        min_rate = min(min_rate, sample_rate)
+        max_rate = max(max_rate, sample_rate)
 
-    sample_rate = sample_count / time_delta
+        mean_rate = total_rate / batch_count
 
-    sample_rate_list.append(sample_rate)
+        print(
+            "Sample rate: {:.2f} Hz (Max: {:.2f}, Mean: {:.2f}, Min: {:.2f}) "
+            "Dropped: {}".format(
+                sample_rate, max_rate, mean_rate, min_rate, drop_count
+            )
+        )
 
-    mean_sample_rate = sum(sample_rate_list) / len(sample_rate_list)
-    min_sample_rate = min(sample_rate_list)
-    max_sample_rate = max(sample_rate_list)
+except KeyboardInterrupt:
+    print("\nInterrupted.")
 
-    output_string = "Sample rate: {:.2f} Hz (".format(sample_rate)
-    output_string += "Max: {:.2f}, ".format(max_sample_rate)
-    output_string += "Mean: {:.2f}, ".format(mean_sample_rate)
-    output_string += "Min: {:.2f})".format(min_sample_rate)
-    output_string += " Dropped: {}".format(drop_count)
-
-    print(output_string)
+finally:
+    print_summary(batch_count, total_rate, min_rate, max_rate, drop_count)
+    hx.cleanup()
 
 
 # EOF - measure_sample_rate.py

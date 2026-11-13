@@ -167,6 +167,12 @@ class HX711:
         self.power_down()
         self.power_up()
 
+    def cleanup(self):
+        # Release the GPIO pins if the underlying module supports it.
+        cleanup = getattr(self._gpio, "cleanup", None)
+        if cleanup is not None:
+            cleanup()
+
 
 def hx711_add_event_detect(hx711_instance, event_callback):
         GPIO.add_event_detect(self._dout, GPIO.FALLING, 

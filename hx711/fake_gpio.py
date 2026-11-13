@@ -37,5 +37,9 @@ class FakeGpio:
 
         raise ValueError("input({})!! Not setup as an input!".format(pin))
 
+    def cleanup(self):
+        self._input_pin = None
+        self._output_pin = None
+
 
 # EOF - fake_gpio.py
