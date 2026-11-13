@@ -5,10 +5,6 @@ HX711 emulator.
 """
 import time
 
-# Sample rate is 80 Hz
-# 0.0125ms
-
-
 # Output Data Rate and Format:
 #
 # When using the on-chip oscillator, output data rate is typically 10 (RATE=0)
@@ -95,8 +91,13 @@ class FakeHx711:
     """Simulates a HX711, currently only emulates channel A: Gain 128,
     attempting to use other settings will raise an exception
     """
+
+    # Sample rate is 80 Hz --> period 0.0125ms
     SAMPLE_PERIOD_SECONDS = 0.0125
+
+    # Holding PD_SCK pin high for 60us will turn it off.
     POWER_OFF_PERIOD_SECONDS = 0.00006
+
     REFERENCE_A_UNIT = 13.819
     REFERENCE_B_UNIT = 13.819
 
@@ -185,6 +186,7 @@ class FakeHx711:
         print("Unrecognised clock count! ({})".format(prev_clock_count))
 
     def dout(self):
+        """Read the DOUT pin of our emulated HX711."""
         self.update()
 
         if self._powered_down:
@@ -212,6 +214,7 @@ class FakeHx711:
         return bit_value
 
     def set_pd_sck(self, pd_sck):
+        """Set the input value of the PD_SCK pin of our emulated HX711."""
         if self._pd_sck_value == pd_sck:
             self.update()
         else:
