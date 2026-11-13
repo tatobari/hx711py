@@ -52,9 +52,11 @@ class HX711:
         self._pd_sck = pd_sck
         self._dout = dout
 
-        # Mutex for reading from the HX711, in case multiple threads in client
-        # software try to access get values from the class at the same time.
-        self._read_lock = threading.Lock()
+        # Reentrant mutex for reading from the HX711, in case multiple threads
+        # in client software try to access values from the class at the same
+        # time.  It is reentrant so set_channel_gain() can call read_word()
+        # while already holding it.
+        self._read_lock = threading.RLock()
 
         self._gpio.setmode(self._gpio.BCM)
         self._gpio.setup(self._pd_sck, self._gpio.OUT)
@@ -78,12 +80,13 @@ class HX711:
                 )
             )
 
-        self._gain = enum_value
+        with self._read_lock:
+            self._gain = enum_value
 
-        self._gpio.output(self._pd_sck, False)
-
-        # Read out a set of raw bytes and throw it away.
-        self.read_word()
+            # Read out the pending conversion and throw it away.  The extra
+            # clocks at the end of read_word() select the new channel/gain
+            # for the next conversion.
+            self.read_word()
 
     def get_channel_gain(self):
         return self._gain
@@ -151,16 +154,17 @@ class HX711:
             # Wait 100 us for the HX711 to power back up.
             time.sleep(0.0001)
 
-        # HX711 will now be defaulted to Channel A with gain of 128.  If this
-        # isn't what client software has requested from us, take a sample and
-        # throw it away, so that next sample from the HX711 will be from the
-        # correct channel/gain.
-        if self._gain != self.CH_A_GAIN_128:
-            self.read_word()
+            # HX711 will now be defaulted to Channel A with gain of 128.  If
+            # this isn't what client software has requested from us, take a
+            # sample and throw it away, so that next sample from the HX711
+            # will be from the correct channel/gain.
+            if self._gain != self.CH_A_GAIN_128:
+                self.read_word()
 
     def reset(self):
-        self.power_down()
-        self.power_up()
+        with self._read_lock:
+            self.power_down()
+            self.power_up()
 
     def cleanup(self):
         # Release the GPIO pins if the underlying module supports it.

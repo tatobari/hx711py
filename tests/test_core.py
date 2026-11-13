@@ -118,7 +118,7 @@ def test_set_channel_gain_accepts_valid_values(gain):
     hx.set_channel_gain(gain)
 
     assert hx.get_channel_gain() == gain
-    assert gpio.bits_read == 24
+    assert gpio.rising_edges == 24 + gain
 
 
 @pytest.mark.parametrize("gain", [0, 4, -1, 128, None, "A"])
@@ -131,6 +131,15 @@ def test_set_channel_gain_rejects_invalid_values(gain):
 
     assert hx.get_channel_gain() == HX711.CH_A_GAIN_128
     assert gpio.rising_edges == 0
+
+
+def test_set_channel_gain_discards_pending_sample():
+    hx = ReadCountingHX711(RecordingGpio())
+
+    hx.set_channel_gain(HX711.CH_B_GAIN_32)
+
+    assert hx.read_count == 1
+    assert hx.get_channel_gain() == HX711.CH_B_GAIN_32
 
 
 def test_read_word_timeout_returns_none_silently_and_releases_lock(capsys):
@@ -205,6 +214,15 @@ def test_power_up_keeps_sample_for_default_gain():
     hx.power_up()
 
     assert hx.read_count == 0
+
+
+def test_reset_discards_sample_for_non_default_gain():
+    hx = ReadCountingHX711(RecordingGpio())
+    hx._gain = HX711.CH_A_GAIN_64
+
+    hx.reset()
+
+    assert hx.read_count == 1
 
 
 def test_cleanup_delegates_to_gpio_module():
