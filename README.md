@@ -26,8 +26,9 @@ I'm currently trying to improve this version. It's actually working, I'd use `hx
 3. [Running the tests](#running-the-tests)
 4. [Measuring the sample rate](#measuring-the-sample-rate)
 5. [Calibrating](#calibrating)
-6. [About using the two channels of one breakout board](#about-using-the-two-channels-of-one-breakout-board)
-7. [Changelog](#changelog)
+6. [Serving readings over the network](#serving-readings-over-the-network)
+7. [About using the two channels of one breakout board](#about-using-the-two-channels-of-one-breakout-board)
+8. [Changelog](#changelog)
 
 ## Files description
 
@@ -38,6 +39,8 @@ File descriptions:
 - `example.py`: Example of how to use `hx711/core.py` to print calibrated weight readings.
 - `example_emulator.py`: Example that runs `hx711/core.py` against the fake GPIO/HX711, so it works without a Raspberry Pi.
 - `calibrate_sensor.py`: Interactive utility that measures known loads and reports the `m` and `c` values for `set_m()`/`set_c()`.
+- `hx711_server.py`: HTTP server that publishes the latest calibrated reading as JSON.
+- `example_client.py`: Example client that polls the server.
 - `hx711/v0_5_1.py`: **Deprecated** — superseded by `hx711/core.py`. The previous version, which aimed at allowing 10 readings per second. Kept for backwards compatibility.
 - `example_hx711v0_5_1.py`: Example of how to use the deprecated `hx711/v0_5_1.py`.
 - `hx711/fake_gpio.py`, `hx711/fake_hx711.py`: Fake GPIO/HX711 used to run the library on a machine without a Raspberry Pi.
@@ -96,6 +99,30 @@ weight = hx.read_weight()
 `read_weight()` returns `m * raw + c`, or `None` on a read timeout. Run
 `python calibrate_sensor.py --help` for pin, sample-count, and gain options.
 
+### Serving readings over the network
+
+`hx711_server.py` reads the HX711 in a background thread and serves the latest
+calibrated reading as JSON over HTTP:
+
+```bash
+python hx711_server.py --unit kg --m 0.000018 --c -2.5
+```
+
+Then poll it from another machine:
+
+```bash
+python example_client.py --url http://raspberrypi.local:8080/weight
+```
+
+`GET /weight` returns:
+
+```json
+{"ts": 1794601083.345, "weight": 12.47, "unit": "kg"}
+```
+
+`ts` is UTC epoch seconds. The endpoint has no authentication, so only expose it
+on a trusted network. Run either script with `--help` for all options.
+
 ### Deprecated Version
 
 `hx711/v0_5_1.py` is deprecated in favour of `hx711/core.py` and is kept for
@@ -153,6 +180,7 @@ https://cdn.sparkfun.com/datasheets/Sensors/ForceFlex/hx711_english.pdf
 - `set_channel_gain()` now validates its argument and raises `ValueError` for invalid values.
 - Added `set_m()`, `set_c()`, and `read_weight()` for calibrated weight readings.
 - Added `calibrate_sensor.py` to fit `m` and `c` from known loads.
+- Added `hx711_server.py` and `example_client.py` for serving readings over HTTP.
 - Added `measure_sample_rate.py` and a `pytest` test suite.
 - `RPi.GPIO` is now an optional `rpi` extra, so the package installs off-Pi.
 - README updated to match the current API.
