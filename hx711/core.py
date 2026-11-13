@@ -38,7 +38,7 @@ class HX711:
     CH_B_GAIN_32 = 2
     CH_A_GAIN_64 = 3
 
-    def __init__(self, dout, pd_sck, gain=128, gpio_module=None):
+    def __init__(self, dout, pd_sck, gpio_module=None):
         self._gpio = gpio_module
 
         if self._gpio is None:
@@ -58,19 +58,7 @@ class HX711:
         # HX711 defaults to Channel A Gain 128 on power up.
         self._gain = self.CH_A_GAIN_128
 
-        # The value returned by the hx711 that corresponds to your reference
-        # unit AFTER dividing by the SCALE.
-        self.REFERENCE_UNIT = 1
-        self.REFERENCE_UNIT_B = 1
-
-        self.OFFSET = 1
-        self.OFFSET_B = 1
-        self.lastVal = int(0)
-
         self.DEBUG_PRINTING = False
-
-        self.byte_format = 'MSB'
-        self.bit_format = 'MSB'
 
     def is_ready(self):
         return self._gpio.input(self._dout) == 0
