@@ -4,7 +4,7 @@ This code is credited to [underdoeg](https://github.com/underdoeg/)'s gist [ HX7
 
 I've only made a few modifications on the way the captured bits are processed and to support Two's Complement, which it didn't.
 
-I'm currently trying to improve this version. It's actually working, I'd use `hx711v_0_5_1.py`.
+I'm currently trying to improve this version. It's actually working, I'd use `hx711/core.py`.
 
 ## Warning: Possible random values
 
@@ -28,19 +28,32 @@ I'm currently trying to improve this version. It's actually working, I'd use `hx
 
 ## Files description
 
+The library lives in the `hx711/` package. The utility scripts sit at the top level and import from it.
+
 File descriptions:
-- `hx711.py`: v0.1 code. Readings are not near as frequent as they could be. Currently, it's barely doing 1 reading per second when the HX711 allows for 10SPS (Samples Per Second), which translates to 10 readings per second.
-- `example.py`: Example of how to use `hx711.py`. The exaplanation is not good at all.
-- `hx711_emulator.py`: This is a class that emulates the behaviour of my original HX711 class. It's actually more a simulator than an emulator.
+- `hx711/core.py`: The main implementation. Readings are not near as frequent as they could be. Currently, it's barely doing 1 reading per second when the HX711 allows for 10SPS (Samples Per Second), which translates to 10 readings per second.
+- `example.py`: Example of how to use `hx711/core.py`. The exaplanation is not good at all.
+- `hx711/emulator.py`: This is a class that emulates the behaviour of my original HX711 class. It's actually more a simulator than an emulator.
 - `example_emulator.py`: Show an example but using the emulator class.
-- `hx711v0_5_1.py`: This a new version I've just created, _**tested and working pretty well**_, with the objective of allowing 10 readings per second. They will be provided by some sort of event I still need to figure out how to create and how to throttle somehow.
-- `example_hx711v0_5_1.py`: 
+- `hx711/v0_5_1.py`: **Deprecated** — superseded by `hx711/core.py`. The previous version, which aimed at allowing 10 readings per second. Kept for backwards compatibility.
+- `example_hx711v0_5_1.py`: Example of how to use the deprecated `hx711/v0_5_1.py`.
+- `hx711/fake_gpio.py`, `hx711/fake_hx711.py`: Fake GPIO/HX711 used to run the library on a machine without a Raspberry Pi.
 
 ## Instructions
 
-### New Version
+### Core Version
 
 No "setup.py" required if you're on Raspbian OS. I'm actually using the Lite Version without GUI to avoid processes messing up with the bit polling process.
+
+```bash
+clone git@github.com:tatobari/hx711py.git
+python example.py
+```
+
+### Deprecated Version
+
+`hx711/v0_5_1.py` is deprecated in favour of `hx711/core.py` and is kept for
+backwards compatibility only. It supports interrupt-based and polling-based reads:
 
 #### Interrupt based
 
@@ -59,15 +72,6 @@ python example_hx711v0_5_1.py --polling-based
 ```
 
 ![Interrupt based](./resources/HX711PY-example-polling-based.gif)
-
-### Legacy Version
-To install the old version (hx711.py):
-
-```bash
-clone git@github.com:tatobari/hx711py.git
-python setup.py install
-python example.py
-```
 
 ## About using the two channels of one breakout board
 

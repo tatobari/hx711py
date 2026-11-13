@@ -3,8 +3,8 @@
 import time
 import threading
 
-from .class_fake_hx711 import FakeHx711
-from .class_fake_gpio import FakeGpio
+from .fake_hx711 import FakeHx711
+from .fake_gpio import FakeGpio
 
 try:
     import RPi.GPIO as GPIO

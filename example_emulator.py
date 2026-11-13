@@ -1,6 +1,6 @@
 import time
 import sys
-from emulated_hx711 import HX711
+from hx711.emulator import HX711
 
 
 def cleanAndExit():

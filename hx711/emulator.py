@@ -327,4 +327,4 @@ class HX711:
        return int(sample)
 
 
-# EOF - emulated_hx711.py
+# EOF - emulator.py

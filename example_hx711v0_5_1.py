@@ -1,7 +1,7 @@
 import time
 import sys
 import RPi.GPIO as GPIO
-from hx711v0_5_1 import HX711
+from hx711.v0_5_1 import HX711
 
 '''
 About READ_MODE
