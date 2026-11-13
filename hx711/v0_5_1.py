@@ -480,4 +480,4 @@ class HX711:
         
         return True
     
-# EOF - hx711.py
+# EOF - v0_5_1.py

@@ -5,6 +5,6 @@ setup(
     version='0.6.0',
     description='HX711 Python Library for Raspberry Pi',
     packages=find_packages(include=['hx711', 'hx711.*']),
-    install_requires=['RPi.GPIO'],
+    extras_require={'rpi': ['RPi.GPIO']},
     python_requires='>=3',
 )

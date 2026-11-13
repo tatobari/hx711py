@@ -58,8 +58,6 @@ class HX711:
         # HX711 defaults to Channel A Gain 128 on power up.
         self._gain = self.CH_A_GAIN_128
 
-        self.DEBUG_PRINTING = False
-
     def is_ready(self):
         return self._gpio.input(self._dout) == 0
 
@@ -175,4 +173,4 @@ def hx711_add_event_detect(hx711_instance, event_callback):
             callback=event_callback)
 
 
-# EOF - hx711.py
+# EOF - core.py

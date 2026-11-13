@@ -226,4 +226,4 @@ class FakeHx711:
                 self.update(neg_edge=True)
 
 
-# EOF - class_fake_hx711.py
+# EOF - fake_hx711.py

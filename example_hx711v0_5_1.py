@@ -107,4 +107,3 @@ while True:
         GPIO.cleanup()
         print("[INFO] 'KeyboardInterrupt Exception' detected. Cleaning and exiting...")
         sys.exit()
-        

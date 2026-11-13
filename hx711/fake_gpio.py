@@ -38,4 +38,4 @@ class FakeGpio:
         raise ValueError("input({})!! Not setup as an input!".format(pin))
 
 
-# EOF - class_fake_gpio.py
+# EOF - fake_gpio.py
