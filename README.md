@@ -1,10 +1,10 @@
-# HX711 for Raspbery Pi
+# HX711 for Raspberry Pi
 
 This code is credited to [underdoeg](https://github.com/underdoeg/)'s gist [ HX711.py](https://gist.github.com/underdoeg/98a38b54f889fce2b237).
 
 I've only made a few modifications on the way the captured bits are processed and to support Two's Complement, which it didn't.
 
-I'm currently trying to improve this version. It's actually working, I'd use `hx711v_0_5_1.py`.
+I'm currently trying to improve this version. It's actually working, I'd use `hx711/core.py`.
 
 ## Warning: Possible random values
 
@@ -23,24 +23,59 @@ I'm currently trying to improve this version. It's actually working, I'd use `hx
 
 1. [Files description](#files-description)
 2. [Instructions](#instructions)
-3. [Usage with two channels](#usage-with-two-channels)
-4. [Changelog](#changelog)
+3. [Running the tests](#running-the-tests)
+4. [Measuring the sample rate](#measuring-the-sample-rate)
+5. [About using the two channels of one breakout board](#about-using-the-two-channels-of-one-breakout-board)
+6. [Changelog](#changelog)
 
 ## Files description
 
+The library lives in the `hx711/` package. The utility scripts sit at the top level and import from it.
+
 File descriptions:
-- `hx711.py`: v0.1 code. Readings are not near as frequent as they could be. Currently, it's barely doing 1 reading per second when the HX711 allows for 10SPS (Samples Per Second), which translates to 10 readings per second.
-- `example.py`: Example of how to use `hx711.py`. The exaplanation is not good at all.
-- `hx711_emulator.py`: This is a class that emulates the behaviour of my original HX711 class. It's actually more a simulator than an emulator.
-- `example_emulator.py`: Show an example but using the emulator class.
-- `hx711v0_5_1.py`: This a new version I've just created, _**tested and working pretty well**_, with the objective of allowing 10 readings per second. They will be provided by some sort of event I still need to figure out how to create and how to throttle somehow.
-- `example_hx711v0_5_1.py`: 
+- `hx711/core.py`: The main implementation. Reads raw signed 24-bit values from the HX711 via `read_word()`.
+- `example.py`: Example of how to use `hx711/core.py` to print raw readings.
+- `example_emulator.py`: Example that runs `hx711/core.py` against the fake GPIO/HX711, so it works without a Raspberry Pi.
+- `hx711/v0_5_1.py`: **Deprecated** — superseded by `hx711/core.py`. The previous version, which aimed at allowing 10 readings per second. Kept for backwards compatibility.
+- `example_hx711v0_5_1.py`: Example of how to use the deprecated `hx711/v0_5_1.py`.
+- `hx711/fake_gpio.py`, `hx711/fake_hx711.py`: Fake GPIO/HX711 used to run the library on a machine without a Raspberry Pi.
+- `measure_sample_rate.py`: Utility that reports the achieved sample rate in Hz.
+- `tests/`: Unit tests, run with `python -m pytest`.
 
 ## Instructions
 
-### New Version
+### Core Version
 
 No "setup.py" required if you're on Raspbian OS. I'm actually using the Lite Version without GUI to avoid processes messing up with the bit polling process.
+
+```bash
+clone git@github.com:tatobari/hx711py.git
+python example.py
+```
+
+On a machine without a Raspberry Pi (or without `RPi.GPIO` installed) the library
+automatically falls back to the fake GPIO/HX711, so the example still runs.
+
+To install the package, use `pip install .`, or `pip install .[rpi]` to also pull
+in `RPi.GPIO` on a Raspberry Pi.
+
+### Running the tests
+
+```bash
+pip install -e .[dev]
+python -m pytest
+```
+
+### Measuring the sample rate
+
+```bash
+python measure_sample_rate.py
+```
+
+### Deprecated Version
+
+`hx711/v0_5_1.py` is deprecated in favour of `hx711/core.py` and is kept for
+backwards compatibility only. It supports interrupt-based and polling-based reads:
 
 #### Interrupt based
 
@@ -60,29 +95,41 @@ python example_hx711v0_5_1.py --polling-based
 
 ![Interrupt based](./resources/HX711PY-example-polling-based.gif)
 
-### Legacy Version
-To install the old version (hx711.py):
-
-```bash
-clone git@github.com:tatobari/hx711py.git
-python setup.py install
-python example.py
-```
-
 ## About using the two channels of one breakout board
 
-This is a completely unnecessary feature that I, for some reason, decided to include in the original code. Anyway, in theory, it allows using two loadcells at the same time but they would have different two gains. So, though they would provide different raw values, both provide weights, just with different accuracy.
+This is a feature I, for some reason, decided to include in the original code.
+In theory it allows using two loadcells at the same time, though channel B only
+has a fixed gain, so the two channels differ in accuracy.
 
-I haven't tested the use of two loadcells on the same breakout board at the same time. It might not work.
+I haven't tested the use of two loadcells on the same breakout board at the same
+time. It might not work.
 
-Channel A has selectable gain of 128 or 64.  Using set_gain(128) or set_gain(64) selects channel A with the specified gain.
+Channel A has a selectable gain of 128 or 64, while channel B has a fixed gain of
+32. Select them with `hx.set_channel_gain(...)`:
 
-Using set_gain(32) selects channel B at the fixed gain of 32. The tare_B(), get_value_B() and get_weight_B() functions do this for you.
+```python
+hx.set_channel_gain(hx.CH_A_GAIN_128)  # Channel A, gain 128
+hx.set_channel_gain(hx.CH_A_GAIN_64)   # Channel A, gain 64
+hx.set_channel_gain(hx.CH_B_GAIN_32)   # Channel B, gain 32
+```
+
+`set_channel_gain()` raises `ValueError` for any other value.
 
 This info was obtained from an HX711 datasheet located at:
 https://cdn.sparkfun.com/datasheets/Sensors/ForceFlex/hx711_english.pdf
 
 ## Changelog
+
+### 13/11/2026
+
+- Restructured the library into the `hx711/` package; utility scripts at the top level import from it.
+- `hx711/core.py` is now the main implementation; `hx711/v0_5_1.py` is deprecated.
+- Removed the old simulated emulator; `hx711/fake_gpio.py` and `hx711/fake_hx711.py` remain for running without hardware.
+- Added GPIO injection via `gpio_module=` and an `HX711.cleanup()` method.
+- `set_channel_gain()` now validates its argument and raises `ValueError` for invalid values.
+- Added `measure_sample_rate.py` and a `pytest` test suite.
+- `RPi.GPIO` is now an optional `rpi` extra, so the package installs off-Pi.
+- README updated to match the current API.
 
 ### 03/03/2023
 
