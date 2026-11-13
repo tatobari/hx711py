@@ -1,6 +1,22 @@
-import RPi.GPIO as GPIO
+"""HX711 driver (v0.5.1).
+
+Deprecated: superseded by :mod:`hx711.core`. Kept for backwards
+compatibility; prefer ``from hx711.core import HX711``.
+"""
+
 import time
 import threading
+
+try:
+    import RPi.GPIO as GPIO
+except ModuleNotFoundError:
+    print("No RPi package, simulating GPIO connected to fake HX711.")
+    from .fake_hx711 import FakeHx711
+    from .fake_gpio import FakeGpio
+
+    FAKE_HX711 = FakeHx711()
+    FAKE_HX711.inject_raw_samples([0x111, 0x222, 0x333])
+    GPIO = FakeGpio(FAKE_HX711)
 
 class HX711:
 
@@ -464,4 +480,4 @@ class HX711:
         
         return True
     
-# EOF - hx711.py
+# EOF - v0_5_1.py
