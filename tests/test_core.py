@@ -107,6 +107,32 @@ def test_read_word_sends_gain_selection_clocks(gain, expected_clock_edges):
     assert gpio.rising_edges == expected_clock_edges
 
 
+@pytest.mark.parametrize(
+    "gain",
+    [HX711.CH_A_GAIN_128, HX711.CH_B_GAIN_32, HX711.CH_A_GAIN_64],
+)
+def test_set_channel_gain_accepts_valid_values(gain):
+    gpio = RecordingGpio(sample=0)
+    hx = HX711(5, 6, gpio_module=gpio)
+
+    hx.set_channel_gain(gain)
+
+    assert hx.get_channel_gain() == gain
+    assert gpio.bits_read == 24
+
+
+@pytest.mark.parametrize("gain", [0, 4, -1, 128, None, "A"])
+def test_set_channel_gain_rejects_invalid_values(gain):
+    gpio = RecordingGpio(sample=0)
+    hx = HX711(5, 6, gpio_module=gpio)
+
+    with pytest.raises(ValueError):
+        hx.set_channel_gain(gain)
+
+    assert hx.get_channel_gain() == HX711.CH_A_GAIN_128
+    assert gpio.rising_edges == 0
+
+
 def test_read_word_timeout_returns_none_and_releases_lock(capsys):
     gpio = RecordingGpio(ready=False)
     hx = HX711(5, 6, gpio_module=gpio)

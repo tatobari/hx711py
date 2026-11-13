@@ -62,13 +62,23 @@ class HX711:
         return self._gpio.input(self._dout) == 0
 
     def set_channel_gain(self, enum_value):
-        if enum_value in [1, 2, 3]:
-            self._gain = enum_value
+        if enum_value not in (
+            self.CH_A_GAIN_128,
+            self.CH_B_GAIN_32,
+            self.CH_A_GAIN_64,
+        ):
+            raise ValueError(
+                "HX711::set_channel_gain() invalid channel/gain: {!r}".format(
+                    enum_value
+                )
+            )
 
-            self._gpio.output(self._pd_sck, False)
+        self._gain = enum_value
 
-            # Read out a set of raw bytes and throw it away.
-            self.read_word()
+        self._gpio.output(self._pd_sck, False)
+
+        # Read out a set of raw bytes and throw it away.
+        self.read_word()
 
     def get_channel_gain(self):
         return self._gain
