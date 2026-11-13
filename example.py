@@ -16,8 +16,8 @@ hx.set_channel_gain(hx.CH_A_GAIN_128)
 
 hx.reset()
 
-hx.set_m(7.19942404607631e-05)
-hx.set_c(-0.14398848092153457)
+hx.set_m(6.755387341782463e-05)
+hx.set_c(-0.03626955667860976)
 
 # read_word() returns a signed 24-bit raw reading, or None on timeout.
 while True:
