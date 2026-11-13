@@ -107,6 +107,30 @@ def test_read_word_sends_gain_selection_clocks(gain, expected_clock_edges):
     assert gpio.rising_edges == expected_clock_edges
 
 
+def test_read_weight_defaults_to_raw_value():
+    hx = HX711(5, 6, gpio_module=RecordingGpio(sample=0x001234))
+
+    assert hx.read_weight() == 0x001234
+
+
+def test_read_weight_applies_m_and_c():
+    hx = HX711(5, 6, gpio_module=RecordingGpio(sample=1000))
+
+    hx.set_m(0.5)
+    hx.set_c(-10.0)
+
+    assert hx.read_weight() == 490.0
+
+
+def test_read_weight_returns_none_on_timeout():
+    hx = HX711(5, 6, gpio_module=RecordingGpio(ready=False))
+
+    hx.set_m(2.0)
+    hx.set_c(1.0)
+
+    assert hx.read_weight(timeout_seconds=0.01) is None
+
+
 @pytest.mark.parametrize(
     "gain",
     [HX711.CH_A_GAIN_128, HX711.CH_B_GAIN_32, HX711.CH_A_GAIN_64],
