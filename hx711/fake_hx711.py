@@ -111,7 +111,7 @@ class FakeHx711:
         self._raw_value = 0x001337
         self._clock_posedge_count = 0
         self._clock_negedge_count = 0
-        self._next_sample_due_time = time.time() + self.SAMPLE_PERIOD_SECONDS
+        self._next_sample_due_time = time.monotonic() + self.SAMPLE_PERIOD_SECONDS
         self._sample_ready = False
         self._prev_clock_count = None
 
@@ -124,19 +124,19 @@ class FakeHx711:
         self._pending_value_list += sample_list
 
     def update_next_sample_due_time(self):
-        self._next_sample_due_time = time.time() + self.SAMPLE_PERIOD_SECONDS
+        self._next_sample_due_time = time.monotonic() + self.SAMPLE_PERIOD_SECONDS
 
     def update_power_down_deadline_time(self):
-        self._power_down_deadline_time = time.time() + self.POWER_OFF_PERIOD_SECONDS
+        self._power_down_deadline_time = time.monotonic() + self.POWER_OFF_PERIOD_SECONDS
 
     def update(self, pos_edge=False, neg_edge=False):
         if self._power_down_deadline_time is not None:
-            if time.time() >= self._power_down_deadline_time:
+            if time.monotonic() >= self._power_down_deadline_time:
                 # print("Powering down.")
                 self._powered_down = True
                 self._power_down_deadline_time = None
 
-        if time.time() >= self._next_sample_due_time:
+        if time.monotonic() >= self._next_sample_due_time:
             self.next_sample()
 
         if pos_edge:
