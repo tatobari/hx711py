@@ -12,7 +12,10 @@ except ModuleNotFoundError:
     print("No RPi package, simulating GPIO connected to fake HX711.")
     FAKE_HX711 = FakeHx711()
 
-    FAKE_HX711.inject_raw_samples([0x111,0x222,0x333])
+    FAKE_HX711.inject_raw_samples([2000] * 100)    # 0kg
+    FAKE_HX711.inject_raw_samples([140900] * 100)  # 10kg
+    FAKE_HX711.inject_raw_samples([696500] * 100)  # 50kg
+    
     GPIO = FakeGpio(FAKE_HX711)
 
 
@@ -65,6 +68,15 @@ class HX711:
         # HX711 defaults to Channel A Gain 128 on power up.
         self._gain = self.CH_A_GAIN_128
 
+        self._m = 1.0
+        self._c = 0.0
+
+    def set_m(self, m):
+        self._m = m
+
+    def set_c(self, c):
+        self._c = c
+        
     def is_ready(self):
         return self._gpio.input(self._dout) == 0
 
@@ -91,6 +103,14 @@ class HX711:
     def get_channel_gain(self):
         return self._gain
 
+    def read_weight(self, timeout_seconds=0.5):
+        raw_sample = self.read_word(timeout_seconds)
+
+        if raw_sample is None:
+            return None
+
+        return (raw_sample * self._m) + self._c
+    
     def read_word(self, timeout_seconds=0.5):
         # Wait for and get the Read Lock, in case another thread is already
         # driving the HX711 serial interface.
@@ -171,11 +191,6 @@ class HX711:
         cleanup = getattr(self._gpio, "cleanup", None)
         if cleanup is not None:
             cleanup()
-
-
-def hx711_add_event_detect(hx711_instance, event_callback):
-        GPIO.add_event_detect(self._dout, GPIO.FALLING, 
-            callback=event_callback)
 
 
 # EOF - core.py
