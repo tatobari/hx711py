@@ -38,6 +38,11 @@ class HX711:
     CH_B_GAIN_32 = 2
     CH_A_GAIN_64 = 3
 
+    # Maximum time allowed to clock out one sample (24 data bits plus the
+    # gain-selection pulses).  If it takes longer than this, the reading may
+    # be corrupt, so read_word() returns None.
+    _CLOCK_TIMEOUT_SECONDS = 0.0125
+
     def __init__(self, dout, pd_sck, gpio_module=None):
         self._gpio = gpio_module
 
@@ -86,85 +91,65 @@ class HX711:
     def read_word(self, timeout_seconds=0.5):
         # Wait for and get the Read Lock, in case another thread is already
         # driving the HX711 serial interface.
-        self._read_lock.acquire()
+        with self._read_lock:
+            deadline = time.monotonic() + timeout_seconds
 
-        deadline = time.time() + timeout_seconds
+            # Make sure clock is low.
+            self._gpio.output(self._pd_sck, False)
 
-        # Make sure clock is low.
-        self._gpio.output(self._pd_sck, False)
+            while self._gpio.input(self._dout) == 1:
+                if time.monotonic() >= deadline:
+                    return None
 
-        while self._gpio.input(self._dout) == 1:
-            if time.time() >= deadline:
-                #raise ValueError("Timed out waiting for HX711 to be ready.")
-                print("Timed out waiting for HX711 to be ready.")
+                time.sleep(0.000001)
 
-                # Release the Read Lock.
-                self._read_lock.release()
+            clock_deadline = time.monotonic() + self._CLOCK_TIMEOUT_SECONDS
 
+            raw_value = 0
+
+            for _ in range(24):
+                # Clock HX711 Digital Serial Clock (PD_SCK).  DOUT will be
+                # ready 1us after PD_SCK rising edge, so we sample after
+                # lowering PD_SCL, when we know DOUT will be stable.
+                self._gpio.output(self._pd_sck, True)
+                self._gpio.output(self._pd_sck, False)
+                raw_value <<= 1
+                raw_value |= int(self._gpio.input(self._dout))
+
+            # Add extra clocks to tell the HX711 what the next reading should
+            # be, we've chosen values of GAIN so that it corresponds to the
+            # required clocks after 24 bits of data have been read.
+            for _ in range(self._gain):
+                self._gpio.output(self._pd_sck, True)
+                self._gpio.output(self._pd_sck, False)
+
+            # Took too long to send all clocks, we can't trust this reading.
+            if time.monotonic() >= clock_deadline:
                 return None
 
-            time.sleep(0.000001)
-
-        deadline = time.time() + 0.0125
-
-        raw_value = 0
-
-        for _ in range(24):
-            # Clock HX711 Digital Serial Clock (PD_SCK).  DOUT will be
-            # ready 1us after PD_SCK rising edge, so we sample after
-            # lowering PD_SCL, when we know DOUT will be stable.
-            self._gpio.output(self._pd_sck, True)
-            self._gpio.output(self._pd_sck, False)
-            raw_value <<= 1
-            raw_value |= int(self._gpio.input(self._dout))
-
-        # Add extra clocks to tell the HX711 what the next reading should be,
-        # we've chosen values of GAIN so that it corresponds to the required
-        # clocks after 24 bits of data have been read.
-        for _ in range(self._gain):
-            self._gpio.output(self._pd_sck, True)
-            self._gpio.output(self._pd_sck, False)
-
-        # Release the Read Lock.
-        self._read_lock.release()
-            
-        # Took too long to measure send all clocks, we can't trust this reading.
-        if time.time() >= deadline:
-            return None
-
-        return twos_complement_24bit_to_int(raw_value)
+            return twos_complement_24bit_to_int(raw_value)
 
     def power_down(self):
         # Wait for and get the Read Lock, in case another thread is already
         # driving the HX711 serial interface.
-        self._read_lock.acquire()
+        with self._read_lock:
+            # Because a rising edge on HX711 Digital Serial Clock (PD_SCK).
+            # We then leave it held up and wait 100us.  After 60us the HX711
+            # should be powered down.
+            self._gpio.output(self._pd_sck, False)
+            self._gpio.output(self._pd_sck, True)
 
-        # Because a rising edge on HX711 Digital Serial Clock (PD_SCK).  We then
-        # leave it held up and wait 100us.  After 60us the HX711 should be
-        # powered down.
-        self._gpio.output(self._pd_sck, False)
-        self._gpio.output(self._pd_sck, True)
-
-        time.sleep(0.0001)
-
-        # Release the Read Lock, now that we've finished driving the HX711
-        # serial interface.
-        self._read_lock.release()           
+            time.sleep(0.0001)
 
     def power_up(self):
-        # Wait for and get the Read Lock, incase another thread is already
+        # Wait for and get the Read Lock, in case another thread is already
         # driving the HX711 serial interface.
-        self._read_lock.acquire()
+        with self._read_lock:
+            # Lower the HX711 Digital Serial Clock (PD_SCK) line.
+            self._gpio.output(self._pd_sck, False)
 
-        # Lower the HX711 Digital Serial Clock (PD_SCK) line.
-        self._gpio.output(self._pd_sck, False)
-
-        # Wait 100 us for the HX711 to power back up.
-        time.sleep(0.0001)
-
-        # Release the Read Lock, now that we've finished driving the HX711
-        # serial interface.
-        self._read_lock.release()
+            # Wait 100 us for the HX711 to power back up.
+            time.sleep(0.0001)
 
         # HX711 will now be defaulted to Channel A with gain of 128.  If this
         # isn't what client software has requested from us, take a sample and

@@ -133,17 +133,56 @@ def test_set_channel_gain_rejects_invalid_values(gain):
     assert gpio.rising_edges == 0
 
 
-def test_read_word_timeout_returns_none_and_releases_lock(capsys):
+def test_read_word_timeout_returns_none_silently_and_releases_lock(capsys):
     gpio = RecordingGpio(ready=False)
     hx = HX711(5, 6, gpio_module=gpio)
 
     assert hx.read_word(timeout_seconds=0.01) is None
-    assert "Timed out" in capsys.readouterr().out
+    assert capsys.readouterr().out == ""
     assert gpio.rising_edges == 0
 
     # The read lock must have been released despite the timeout.
     assert hx._read_lock.acquire(blocking=False)
     hx._read_lock.release()
+
+
+def test_read_word_releases_lock_when_gpio_raises():
+    class ExplodingGpio(RecordingGpio):
+        def input(self, pin):
+            raise RuntimeError("boom")
+
+    gpio = ExplodingGpio(ready=False)
+    hx = HX711(5, 6, gpio_module=gpio)
+
+    with pytest.raises(RuntimeError):
+        hx.read_word(timeout_seconds=0.01)
+
+    assert hx._read_lock.acquire(blocking=False)
+    hx._read_lock.release()
+
+
+def test_power_down_releases_lock_when_gpio_raises():
+    class ExplodingGpio(RecordingGpio):
+        def output(self, pin, value):
+            raise RuntimeError("boom")
+
+    gpio = ExplodingGpio()
+    hx = HX711(5, 6, gpio_module=gpio)
+
+    with pytest.raises(RuntimeError):
+        hx.power_down()
+
+    assert hx._read_lock.acquire(blocking=False)
+    hx._read_lock.release()
+
+
+def test_read_word_honors_clock_timeout():
+    gpio = RecordingGpio(sample=0)
+    hx = HX711(5, 6, gpio_module=gpio)
+    hx._CLOCK_TIMEOUT_SECONDS = 0
+
+    assert hx.read_word() is None
+    assert gpio.rising_edges == 25
 
 
 def test_is_ready_reflects_dout_level():
